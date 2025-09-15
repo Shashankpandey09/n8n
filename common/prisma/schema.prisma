@@ -1,0 +1,113 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+enum ExecutionStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+enum TaskStatus {
+  PENDING
+  RUNNING
+  SUCCESS
+  FAILED
+}
+model User {
+  id          Int          @id @default(autoincrement())
+  email       String       @unique
+  name        String?
+  password    String
+  workflows   Workflow[]   
+  credentials Credential[] 
+  createdAt   DateTime     @default(now())
+}
+model Workflow{
+  id Int @id @default(autoincrement())
+  title String?
+  enabled Boolean @default(true)
+  nodes Json
+  connections Json
+  userId Int
+  user User @relation(fields: [userId],references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  Webhooks Webhook[]
+  Executions Execution[]
+}
+model Webhook {
+  id         Int      @id @default(autoincrement())
+  workflow   Workflow @relation(fields: [workflowId], references: [id])
+  workflowId Int
+  path       String   @unique                       // e.g. /webhook/abcd123
+  method     String   // "POST", "GET", etc.
+  secret     String?  // optional server-generated secret for signature verification
+  createdAt  DateTime @default(now())
+
+  @@index([workflowId])
+}
+model Outbox {
+  id         Int      @id @default(autoincrement())
+  topic      String   // e.g. "runExecution"
+  payload    Json
+  createdAt  DateTime @default(now())
+  processed  Boolean  @default(false)
+  processedAt DateTime?
+  tries      Int      @default(0)
+  // index on processed to speed sweeper
+  @@index([processed])
+}
+model Credential {
+  id        Int      @id @default(autoincrement())
+  owner     User   @relation(fields: [ownerId], references: [id])
+  ownerId   Int
+  title     String
+  platform  String   // e.g. "telegram", "resend", "openai"
+  data      Bytes    // encrypted JSON blob (AES-GCM recommended)
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}
+model Execution {
+  id         Int             @id @default(autoincrement())
+  workflow   Workflow        @relation(fields: [workflowId], references: [id])
+  workflowId Int
+  status     ExecutionStatus @default(PENDING)
+  input      Json?
+  // result     Json?
+  tasks      ExecutionTask[]
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+
+  @@index([workflowId, status])
+  @@index([createdAt])
+}
+model ExecutionTask {
+  id          Int         @id @default(autoincrement())
+  execution   Execution   @relation(fields: [executionId], references: [id])
+  executionId Int
+  nodeId      String      // node id from workflow.nodes
+  status      TaskStatus  @default(PENDING)
+  attempts    Int         @default(0)
+  input       Json?
+  output      Json?
+  error       String?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  @@index([executionId, nodeId])
+  @@index([status])
+}

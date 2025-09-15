@@ -1,0 +1,24 @@
+{
+  "name": "@shashankpandey/prisma",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist/", "prisma/", "generated/prisma/"],
+   "scripts": {
+    "generate": "prisma generate",
+    "build": "tsc -b .",
+    "prepack": "npm run generate && npm run build"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.16.1",
+    "prisma": "^6.16.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.4.0"
+  }
+}
