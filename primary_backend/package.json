@@ -10,11 +10,16 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shashankpandey/prisma": "^1.0.0",
+    "@shashankpandey/prisma": "^1.0.2",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "uuid4": "^2.0.3",
+    "zod": "^4.1.9"
+  },
+  "devDependencies": {
+    "@types/uuid4": "^2.0.3"
   }
 }

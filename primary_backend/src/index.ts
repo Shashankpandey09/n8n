@@ -15,7 +15,8 @@ import { WebhookRouter } from './routes/Webhook'
 import cors from 'cors'
 const app=express()
 app.use(cors())
+app.use(express.json())
 app.use('api/v1/user',UserRouter)
 app.use('/api/v1/workflow',WorkFlowRouter)
-app.use('/api/v1/webhook/handle:/id',WebhookRouter)
+app.use('/api/v1/webhook',WebhookRouter)
 app.listen(3000,()=>console.log('server started'))

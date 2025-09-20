@@ -44,13 +44,14 @@ model Workflow{
   user User @relation(fields: [userId],references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  Webhooks Webhook[]
+  Webhooks Webhook?
   Executions Execution[]
+  outbox Outbox[]
 }
 model Webhook {
   id         Int      @id @default(autoincrement())
   workflow   Workflow @relation(fields: [workflowId], references: [id])
-  workflowId Int
+  workflowId Int @unique
   path       String   @unique                       // e.g. /webhook/abcd123
   method     String   // "POST", "GET", etc.
   secret     String?  // optional server-generated secret for signature verification
@@ -60,14 +61,17 @@ model Webhook {
 }
 model Outbox {
   id         Int      @id @default(autoincrement())
-  topic      String   // e.g. "runExecution"
-  payload    Json
-  createdAt  DateTime @default(now())
-  processed  Boolean  @default(false)
-  processedAt DateTime?
-  tries      Int      @default(0)
+  workflow   Workflow        @relation(fields: [workflowId], references: [id])
+  workflowId Int @unique
+  executionId Int @unique
+  // topic      String   // e.g. "runExecution"
+  // payload    Json
+  // createdAt  DateTime @default(now())
+  // processed  Boolean  @default(false)
+  // processedAt DateTime?
+  // tries      Int      @default(0)
   // index on processed to speed sweeper
-  @@index([processed])
+  @@index([workflowId])
 }
 model Credential {
   id        Int      @id @default(autoincrement())
