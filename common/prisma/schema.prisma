@@ -77,9 +77,9 @@ model Credential {
   id        Int      @id @default(autoincrement())
   owner     User   @relation(fields: [ownerId], references: [id])
   ownerId   Int
-  title     String
-  platform  String   // e.g. "telegram", "resend", "openai"
-  data      Bytes    // encrypted JSON blob (AES-GCM recommended)
+  title     String?
+  platform  String @unique  // e.g. "telegram", "resend", "openai"
+  data      String    // encrypted JSON blob (AES-GCM recommended)
   verified  Boolean  @default(false)
   createdAt DateTime @default(now())
 

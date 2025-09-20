@@ -13,10 +13,16 @@ import { UserRouter } from './routes/user'
 import { WorkFlowRouter } from './routes/workflow'
 import { WebhookRouter } from './routes/Webhook'
 import cors from 'cors'
+import { init } from './utils/encryptCred'
+import { CredRouter } from './routes/credential'
+
 const app=express()
 app.use(cors())
 app.use(express.json())
+init()
 app.use('api/v1/user',UserRouter)
 app.use('/api/v1/workflow',WorkFlowRouter)
 app.use('/api/v1/webhook',WebhookRouter)
+app.use('/api/v1/credential',CredRouter)
+
 app.listen(3000,()=>console.log('server started'))

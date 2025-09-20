@@ -1,4 +1,4 @@
-import { nodeCatalog } from "../nodeCatalog"
+import {nodeCatalog} from '@shashankpandey/prisma'
 import {z} from 'zod'
 
 type NodeAny = any;

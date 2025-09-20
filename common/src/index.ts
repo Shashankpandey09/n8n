@@ -1,5 +1,6 @@
 
 import { PrismaClient } from '../generated/prisma/';
+export { nodeCatalog } from './nodeCatalog';
 
 declare global {
   
