@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/nodecatalog.ts","./src/middleware/authenticate.ts","./src/routes/webhook.ts","./src/routes/credential.ts","./src/routes/user.ts","./src/routes/workflow.ts","./src/services/createworkflow.ts","./src/utils/validate.ts"],"version":"5.6.2"}
+{"root":["./src/index.ts","./src/middleware/authenticate.ts","./src/routes/webhook.ts","./src/routes/credential.ts","./src/routes/user.ts","./src/routes/workflow.ts","./src/services/createworkflow.ts","./src/utils/encryptcred.ts","./src/utils/validate.ts"],"version":"5.6.2"}

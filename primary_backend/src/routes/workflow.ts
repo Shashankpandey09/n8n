@@ -15,7 +15,7 @@ WorkFlowRouter.post("/", async (req: ExtendedReq, res: Response) => {
       return res.status(401).json({ ok: false, message: "Unauthorized: no userId" });
     }
 
-    const body = req.body;
+    const body = req?.body;
     const result = await createWorkflow(userId, body);
 
     // If your service returns structured responses with ok: true/false

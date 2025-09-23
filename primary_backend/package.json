@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shashankpandey/prisma": "^1.0.5",
+    "@shashankpandey/prisma": "^1.0.7",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/libsodium-wrappers": "^0.7.14",

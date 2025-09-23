@@ -40,6 +40,7 @@ export function validate(nodes: NodeAny[] = [], connections: ConnAny[] = []) {
         index: i,
         ZodErrors:parsedNode.error.issues.map((e:any) => ({ path: e.path, msg: e.message })),
       })
+      continue; 
     }
     const n={...parsedNode.data}
 

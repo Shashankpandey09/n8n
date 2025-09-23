@@ -7,7 +7,7 @@ export const nodeCatalog = [
       { name: 'text', type: 'string', required: true }
     ], credentials: [{name:'telegram',required:true}] },
 
-  { type: 'email', category: 'Action', parameters: [
+  { type: 'smtp', category: 'Action', parameters: [
       { name: 'to', type: 'string', required: true },
       { name: 'subject', type: 'string', required: false, default: '' },
       { name: 'body', type: 'string', required: true },
