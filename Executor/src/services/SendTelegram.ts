@@ -9,7 +9,7 @@ export async function sendTelegram(WebhookUrl: string, message: string) {
       }
     );
     if(res.status==204){
-        console.log('success')
+        console.log('DISCORD executed')
         return success=true
     }    
   } catch (error) {

@@ -2,6 +2,8 @@ import { Kafka } from "kafkajs";
 import prisma from "@shashankpandey/prisma";
 import { sendTelegram } from "./services/SendTelegram";
 import dotenv from "dotenv";
+import { FetchCred } from "./utils/FetchCreds";
+import { sendEmail } from "./services/sendMail";
 dotenv.config();
 
 const kafka = new Kafka({
@@ -39,8 +41,8 @@ async function Init() {
 
         const payload = JSON.parse(raw);
         // basic validations
-        if (!payload.workflowId || !payload.executionId) {
-          console.warn("message missing workflowId or executionId", payload);
+        if (!payload.workflowId || !payload.executionId||!payload.ExecutionPayload) {
+          console.warn("message missing workflowId or executionId or payload", payload);
           // commit offset to avoid reprocessing malformed message
           await consumer.commitOffsets([
             {
@@ -55,7 +57,7 @@ async function Init() {
         // loading workflow nodes
         const wf = await prisma.workflow.findUnique({
           where: { id: payload.workflowId },
-          select: { nodes: true },
+          select: { nodes: true ,userId:true},
         });
 
         const nodes = wf?.nodes as unknown as Node[] | undefined;
@@ -133,17 +135,20 @@ async function Init() {
             case "telegram":
               // TODO: implement sendTelegram(nodeToExecute, payload)
               // console.log("would send telegram for node:", nodeToExecute.id);
-              const Payload = { message: "hi testing again" };
+              const {message}=JSON.parse(payload.ExecutionPayload)
               ok = await sendTelegram(
                 process.env.DISCORD_WEBHOOK!,
-                Payload.message
+                message
               );
               break;
 
             case "smtp":
               // TODO: implement sendEmail(nodeToExecute, payload)
-              console.log("would send email for node:", nodeToExecute.id);
-              ok=true
+              const {to,from,body}=JSON.parse(payload.ExecutionPayload)
+              const credential=await FetchCred('smtp',wf?.userId!)
+              if(credential){
+              ok=await sendEmail(to,from,body,wf?.userId!)
+              }
               break;
 
             default:

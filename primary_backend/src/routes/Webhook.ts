@@ -60,7 +60,7 @@ WebhookRouter.get(
 WebhookRouter.all("/handle/:path", async (req: ExtendedReq, res: Response) => {
   try {
     const path = req.params.path;
-    const payload: any = req.body.payload;
+    const payload: any = req.body;
     const webhook = await prisma.webhook.findUnique({
       where: { path: path },
       select: {
@@ -116,6 +116,7 @@ WebhookRouter.all("/handle/:path", async (req: ExtendedReq, res: Response) => {
         data: {
           workflowId: Exec.workflowId,
           executionId: Exec.id,
+          ExecutionPayload:JSON.stringify(payload)
         },
       });
     });

@@ -69,6 +69,7 @@ model Outbox {
   workflowId Int 
   executionId Int @unique
   status  OutboxEnum @default(UNSENT)
+  ExecutionPayload String ?
   // topic      String   // e.g. "runExecution"
   // payload    Json
   // createdAt  DateTime @default(now())
@@ -89,6 +90,7 @@ model Credential {
   createdAt DateTime @default(now())
 
   @@index([ownerId])
+  @@index([ownerId,platform])
 }
 model Execution {
   id         Int             @id @default(autoincrement())

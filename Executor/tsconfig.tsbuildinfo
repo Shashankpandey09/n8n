@@ -1,1 +1,1 @@
-{"root":["./src/index.ts","./src/services/sendtelegram.ts","./src/services/sendmail.ts","./src/utils/executionpayload.ts"],"version":"5.6.2"}
+{"root":["./src/index.ts","./src/services/sendtelegram.ts","./src/services/sendmail.ts","./src/utils/credmanager.ts","./src/utils/decryptcred.ts","./src/utils/fetchcreds.ts"],"version":"5.6.2"}

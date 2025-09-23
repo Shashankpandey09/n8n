@@ -1,0 +1,1 @@
+{"root":["./index.ts","./services/sendtelegram.ts","./services/sendmail.ts","./utils/decryptcred.ts","./utils/fetchcreds.ts"],"version":"5.6.2"}
