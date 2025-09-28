@@ -1,9 +1,9 @@
 import { Transporter } from "nodemailer";
-
+import { LRUCache } from 'lru-cache'
 export class CredManager {
   private cred: Map<string, any> = new Map();
   private static instance: CredManager;
-   private transporterCache = new Map<number, Transporter>();
+   private transporterCache = new LRUCache<number, Transporter>({ max: 500 });
   private constructor() {}
   public static getInstance(): CredManager {
     if (!CredManager.instance) {
@@ -19,7 +19,7 @@ export class CredManager {
     return this.cred.get(platform);
   }
   public transporterCacheSet(userID:number,transporter:Transporter){
-    this.transporterCache.set(userID,transporter)
+   this.transporterCache.set(userID,transporter)
   }
   public transporterCacheGet(userID:number){
     if(this.transporterCache.has(userID)){

@@ -1,65 +1,91 @@
 // src/mailer.ts
-
 import nodemailer from "nodemailer";
+import prisma from "@shashankpandey/prisma";
 import { CredManager } from "../utils/CredManager";
 
-async function getOrCreateTransporter(userID: number) {
-  try {
-    if (CredManager.getInstance().transporterCacheGet(userID)) {
-      console.log(`Reusing existing transporter for user: ${userID}`);
-      return CredManager.getInstance().transporterCacheGet(userID)!;
+async function getOrCreateTransporter(userID: number): Promise<nodemailer.Transporter> {
+    try {
+        const cachedTransporter = CredManager.getInstance().transporterCacheGet(userID);
+        if (cachedTransporter) {
+            console.log(`Reusing existing transporter for user: ${userID}`);
+            return cachedTransporter;
+        }
+
+        const creds = CredManager.getInstance().getCred("smtp");
+        if (!creds?.EMAIL_USER || !creds?.EMAIL_PASS) {
+            throw new Error(`SMTP credentials not found for user ${userID}`);
+        }
+
+        const transporter = nodemailer.createTransport({
+            pool: true,
+            maxConnections: 5,
+            service: "gmail",
+            auth: {
+                user: creds.EMAIL_USER,
+                pass: creds.EMAIL_PASS,
+            },
+            socketTimeout: 60000,
+        });
+        
+        CredManager.getInstance().transporterCacheSet(userID, transporter);
+        return transporter;
+    } catch (error) {
+        console.error("Error creating transporter:", error);
+        throw new Error("Failed to create or get transporter.");
     }
-   
-
-    const creds = CredManager.getInstance().getCred("smtp");
-
-    const EMAIL_USER = creds?.EMAIL_USER;
-    const EMAIL_PASS = creds?.EMAIL_PASS;
-    //calling the FetchCreds function
-
-    // A transporter is an object that can send mail.
-    const transporter = nodemailer.createTransport({
-      service: "gmail", // Use 'gmail' for simplicity
-      auth: {
-        user: EMAIL_USER!,
-        pass: EMAIL_PASS,
-      },
-    });
-    CredManager.getInstance().transporterCacheSet(userID,transporter)
-    return transporter;
-  } catch (error) {
-    throw new Error("error creating transporter");
-  }
-
-  // 2. Define the email options
-  // This object specifies the sender, recipient, subject, and content.
 }
-// 3. Create an async function to send the email
+
 export async function sendEmail(
-  to: string,
-  from: string,
-  body: string,
-  userID: number
+    to: string,
+    from: string,
+    body: string,
+    userID: number,
+    action: string,
+    workflowId: number,
+    executionId: number,
+    nodeId: string,
+    execTaskId: number // Can still be used for logging if needed
 ) {
-  try {
+    try {
+        const transporter = await getOrCreateTransporter(userID);
 
-    const transporter = await getOrCreateTransporter(userID);
-    const mailOptions = {
-      // Sender address
-      from: `${from}`,
-      to: `${to}`,
-      subject: "Hello from Nodemailer! 👋", // Subject line
-      html: `${body}`, // HTML body
-    };
-    
-    const info = await transporter.sendMail(mailOptions);
-    console.log("Email sent successfully!");
+        const mailOptions = {
+            from: `"${from}" <${CredManager.getInstance().getCred("smtp")?.EMAIL_USER}>`,
+            to: to,
+            // SUBJECT: Clean and user-friendly. No technical IDs are needed here.
+            subject: `Waiting for your reply! 👋`,
+            html: body,
+        };
 
-    return true;
-  } catch (error) {
-    console.error("Error sending email:", error);
-    return false;
-  }
+        const info = await transporter.sendMail(mailOptions);
+        
+        // This is the real, unique ID assigned by the email server (e.g., Gmail)
+        const sentMessageId = info.messageId;
+        console.log(`Email sent successfully with Message-ID: ${sentMessageId}`);
+        
+        if (action === "Send&wait") {
+            try {
+                // We save the REAL Message-ID to the database. This is the key.
+                await prisma.emailWait.create({
+                    data: {
+                        messageId: sentMessageId, // <-- IMPORTANT
+                        workflowId: workflowId,
+                        executionId: executionId,
+                        nodeId: nodeId,
+                        userId: userID,
+                        status: "WAITING",
+                    },
+                });
+                console.log(`Created EmailWait entry, now waiting for a reply to: ${sentMessageId}`);
+                return false; // Correctly pauses the workflow
+            } catch (error) {
+                console.warn("Could not create EmailWait entry in the DB:", error);
+                return true; // Resume workflow if DB write fails
+            }
+        }
+        return true;
+    } catch (error) {
+        console.error("Error sending email:", error);
+        return false;
+    }
 }
-
-// 4. Call the function

@@ -122,3 +122,19 @@ model ExecutionTask {
   @@index([executionId, nodeId])
   @@index([status])
 }
+model EmailWait {
+  id          Int      @id @default(autoincrement())
+
+  messageId   String @unique
+  workflowId  Int
+  executionId Int
+  nodeId      String
+  userId    Int
+  // toEmail     String
+  // subject     String?
+  // context     Json?
+  
+  status      String   @default("WAITING") // WAITING | REPLIED | EXPIRED
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+}

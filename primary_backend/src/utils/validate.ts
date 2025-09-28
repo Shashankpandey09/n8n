@@ -12,7 +12,8 @@ const NodeShapeSchema=z.object({
   type:z.string(),
    parameters: z.record(z.any(),z.any()),
    Credential:z.array(z.string()).optional(),
-   meta:z.record(z.any(),z.any()).optional()
+   meta:z.record(z.any(),z.any()).optional(),
+   action:z.string().optional()
 })
 const connectionSchema=z.object({
   from:z.string().min(1),
