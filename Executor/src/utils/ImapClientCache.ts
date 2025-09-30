@@ -5,7 +5,7 @@ type ImapEntry = { client: ImapFlow };
 
 export const cache = new LRUCache<string, ImapEntry>({
   max: 200,
-  ttl: (1000*60*5-1) ,
+  ttl: (1000*60*15) ,
   dispose: async (value, key) => {
     console.log(`Disposing of IMAP client for key: ${key}`);
     if (value.client.usable) {

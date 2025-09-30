@@ -3,6 +3,7 @@ import { ExtendedReq } from "./workflow";
 import uuid4 from "uuid4";
 import {  z } from "zod";
 import prisma from "@shashankpandey/prisma";
+import Authenticate from "../middleware/Authenticate";
 export const WebhookRouter = Router();
 const webhookSchema = z.object({
   path: z.string().min(3, "Path must be atleast of 3 char length"),
@@ -24,6 +25,7 @@ type Node = {
 //external services hitting the webhook which may use diff method which results in the execution of the workflow
 WebhookRouter.get(
   "/create/:workflowId",
+  Authenticate,
   async (req: ExtendedReq, res: Response) => {
     try {
       const userId = req.userId || 1;
@@ -57,7 +59,7 @@ WebhookRouter.get(
     }
   }
 );
-WebhookRouter.all("/handle/:path", async (req: ExtendedReq, res: Response) => {
+WebhookRouter.all("/handle/:path",Authenticate, async (req: ExtendedReq, res: Response) => {
   try {
     const path = req.params.path;
     const payload: any = req.body;

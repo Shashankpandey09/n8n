@@ -44,7 +44,7 @@ export async function sendEmail(
     workflowId: number,
     executionId: number,
     nodeId: string,
-    execTaskId: number // Can still be used for logging if needed
+    execTaskId: number 
 ) {
     try {
         const transporter = await getOrCreateTransporter(userID);
@@ -52,23 +52,23 @@ export async function sendEmail(
         const mailOptions = {
             from: `"${from}" <${CredManager.getInstance().getCred("smtp")?.EMAIL_USER}>`,
             to: to,
-            // SUBJECT: Clean and user-friendly. No technical IDs are needed here.
+            
             subject: `Waiting for your reply! 👋`,
             html: body,
         };
 
         const info = await transporter.sendMail(mailOptions);
         
-        // This is the real, unique ID assigned by the email server (e.g., Gmail)
+        
         const sentMessageId = info.messageId;
         console.log(`Email sent successfully with Message-ID: ${sentMessageId}`);
         
         if (action === "Send&wait") {
             try {
-                // We save the REAL Message-ID to the database. This is the key.
+              
                 await prisma.emailWait.create({
                     data: {
-                        messageId: sentMessageId, // <-- IMPORTANT
+                        messageId: sentMessageId, 
                         workflowId: workflowId,
                         executionId: executionId,
                         nodeId: nodeId,

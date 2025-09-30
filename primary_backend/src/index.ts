@@ -15,10 +15,12 @@ import { WebhookRouter } from './routes/Webhook'
 import cors from 'cors'
 import { init } from './utils/encryptCred'
 import { CredRouter } from './routes/credential'
+import dotenv from 'dotenv'
 
 const app=express()
 app.use(cors())
 app.use(express.json())
+dotenv.config()
 init()
 app.use('api/v1/user',UserRouter)
 app.use('/api/v1/workflow',WorkFlowRouter)

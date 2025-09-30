@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import { createWorkflow } from "../services/createworkflow";
 import dotenv from 'dotenv'
+import Authenticate from "../middleware/Authenticate";
 dotenv.config()
 export const WorkFlowRouter = Router();
 
@@ -8,9 +9,9 @@ export interface ExtendedReq extends Request {
   userId?: number;
 }
 
-WorkFlowRouter.post("/", async (req: ExtendedReq, res: Response) => {
+WorkFlowRouter.post("/", Authenticate,async (req: ExtendedReq, res: Response) => {
   try {
-    const userId = req.userId||1;
+    const userId = req.userId;
     if (!userId) {
       return res.status(401).json({ ok: false, message: "Unauthorized: no userId" });
     }
