@@ -7,7 +7,7 @@ import Authenticate from "../middleware/Authenticate";
 dotenv.config();
 export const CredRouter = Router();
 
-CredRouter.post("/", Authenticate,async (req: ExtendedReq, res: Response) => {
+CredRouter.post("/", Authenticate, async (req: ExtendedReq, res: Response) => {
   try {
     const userId = req.userId || 1;
     const { name, credential } = req.body;
@@ -34,33 +34,44 @@ CredRouter.post("/", Authenticate,async (req: ExtendedReq, res: Response) => {
     throw new Error("error while creating cred " + req.body.type, error);
   }
 });
-CredRouter.delete('/delete', Authenticate, async (req: ExtendedReq, res: Response) => {
-  try {
-    const userId = req.userId;  
-    const platform = req.query.platform as string;
+CredRouter.delete(
+  "/delete",
+  Authenticate,
+  async (req: ExtendedReq, res: Response) => {
+    try {
+      const userId = req.userId;
+      const platform = req.query.platform as string;
 
-    if (!userId || !platform) {
-      return res.status(400).json({
-        message: 'Either userId or platform name is missing'
-      });
-    }
-
-    
-    const result = await prisma.credential.delete({
-      where: {
-        platform: platform,
-        ownerId: userId
+      if (!userId || !platform) {
+        return res.status(400).json({
+          message: "Either userId or platform name is missing",
+        });
       }
-    });
 
-    if (!result) {
-      return res.status(404).json({ message: 'No such credential found to delete' });
+      const result = await prisma.credential.delete({
+        where: {
+          platform: platform,
+          ownerId: userId,
+        },
+      });
+
+      if (!result) {
+        return res
+          .status(404)
+          .json({ message: "No such credential found to delete" });
+      }
+
+      return res
+        .status(200)
+        .json({ message: "Credential deleted successfully" });
+    } catch (error) {
+      console.error(error);
+      return res
+        .status(500)
+        .json({
+          message: "Internal server error while deleting credential",
+          error,
+        });
     }
-
-    return res.status(200).json({ message: 'Credential deleted successfully' });
-
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: 'Internal server error while deleting credential', error });
   }
-});
+); 

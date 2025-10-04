@@ -115,7 +115,7 @@ export function validate(nodes: NodeAny[] = [], connections: ConnAny[] = []) {
     }
   }
 
-  const valid = err.length === 0 && Object.keys(missingParams).length === 0;
+  const valid = err.length === 0 && Object.keys(missingParams).length === 0&&missingCredId.size===0;
 
   return {
     nodes,
