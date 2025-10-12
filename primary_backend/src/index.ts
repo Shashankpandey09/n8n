@@ -18,11 +18,11 @@ import { CredRouter } from './routes/credential'
 import dotenv from 'dotenv'
 
 const app=express()
-app.use(cors())
+app.use(cors({origin:'*'}))
 app.use(express.json())
 dotenv.config()
 init()
-app.use('api/v1/user',UserRouter)
+app.use('/api/v1/user',UserRouter)
 app.use('/api/v1/workflow',WorkFlowRouter)
 app.use('/api/v1/webhook',WebhookRouter)
 app.use('/api/v1/credential',CredRouter)

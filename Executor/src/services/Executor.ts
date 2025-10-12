@@ -13,13 +13,13 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({ groupId: "test-group" });
 export const producer = kafka.producer();
 
-type Para = { name: string; type: string; required: boolean };
+
 type Node = {
   id: string;
   type: string;
-  parameters: Para[];
-  credentials?: Array<{ name: string; required: boolean }>;
-  action:string
+  parameters: any;
+  credentials?: Array<string>;
+  action: string;
 };
 
 export async function Init() {
@@ -42,8 +42,15 @@ export async function Init() {
 
         const payload = JSON.parse(raw);
         // basic validations
-        if (!payload.workflowId || !payload.executionId||!payload.ExecutionPayload) {
-          console.warn("message missing workflowId or executionId or payload", payload);
+        if (
+          !payload.workflowId ||
+          !payload.executionId ||
+          !payload.ExecutionPayload
+        ) {
+          console.warn(
+            "message missing workflowId or executionId or payload",
+            payload
+          );
           // commit offset to avoid reprocessing malformed message
           await consumer.commitOffsets([
             {
@@ -58,7 +65,7 @@ export async function Init() {
         // loading workflow nodes
         const wf = await prisma.workflow.findUnique({
           where: { id: payload.workflowId },
-          select: { nodes: true ,userId:true},
+          select: { nodes: true, userId: true },
         });
 
         const nodes = wf?.nodes as unknown as Node[] | undefined;
@@ -130,25 +137,42 @@ export async function Init() {
           return;
         }
         let ok = null;
-        // Now actually execute the node action (call handler). Wrap in try/catch.
+
         try {
           switch (nodeToExecute.type) {
-            case "telegram":
-              // TODO: implement sendTelegram(nodeToExecute, payload)
-              // console.log("would send telegram for node:", nodeToExecute.id);
-              const {message}=JSON.parse(payload.ExecutionPayload)
+            case "discord":
+              let Message:
+                | { DiscordMessage?: string; EmailMessage?: string }
+                = {};
+              const { message } = JSON.parse(payload.ExecutionPayload);
+              //@ts-ignore
+              const DiscMess = nodeToExecute.parameters?.message;
+              if (DiscMess) {
+                (Message.DiscordMessage = DiscMess),
+                  (Message.EmailMessage = message);
+              }
               ok = await sendTelegram(
                 process.env.DISCORD_WEBHOOK!,
-                message
+                Object.keys(Message).length>1 ? JSON.stringify(Message) :DiscMess
               );
               break;
 
             case "smtp":
-              // TODO: implement sendEmail(nodeToExecute, payload)
-              const {to,from,body}=JSON.parse(payload.ExecutionPayload)
-              const credential=await FetchCred('smtp',wf?.userId!)
-              if(credential){
-              ok=await sendEmail(to,from,body,wf?.userId!,nodeToExecute.action,payload.workflowId,payload.executionId,nodeToExecute.id,task.id)
+              console.log(nodeToExecute.parameters)
+              const { to, from, body,subject } = nodeToExecute.parameters;
+              const credential = await FetchCred("smtp", 1||wf?.userId!);
+              if (credential) {
+                ok = await sendEmail(
+                  to,
+                  from,
+                  body,
+                  wf?.userId!,
+                  nodeToExecute.action,
+                  payload.workflowId,
+                  payload.executionId,
+                  nodeToExecute.id,
+                  subject,
+                );
               }
               break;
 
@@ -204,5 +228,3 @@ export async function Init() {
     },
   });
 }
-
-

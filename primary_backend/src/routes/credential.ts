@@ -17,20 +17,26 @@ CredRouter.post("/", Authenticate, async (req: ExtendedReq, res: Response) => {
       credential
     );
     //creating cred for the platform
-    const cred = await prisma.credential.create({
-      data: {
-        ownerId: userId,
-        platform: name,
-        data: credBlob,
-      },
-      select: {
-        id: true,
-        platform: true,
-      },
+    const cred = await prisma.credential.upsert({
+     where:{
+      ownerId_platform:{
+        ownerId:userId,
+        platform:name
+      }
+     },
+     update:{
+      data:credBlob
+     },
+     create:{
+      ownerId:userId,
+      data:credBlob,
+      platform:name
+     }
     });
 
     return res.status(200).json({ message: cred, ok: true });
   } catch (error: any) {
+    console.log(error)
     throw new Error("error while creating cred " + req.body.type, error);
   }
 });
@@ -50,8 +56,10 @@ CredRouter.delete(
 
       const result = await prisma.credential.delete({
         where: {
-          platform: platform,
+          ownerId_platform:{
+             platform: platform,
           ownerId: userId,
+          }
         },
       });
 

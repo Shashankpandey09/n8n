@@ -22,6 +22,8 @@ import { ArrowLeft, Save, Play, Trash } from "lucide-react";
 import { toast } from "sonner";
 import NodePalette from "@/components/workflow/NodePalette";
 import NodeInspector from "@/components/workflow/NodeInspector";
+import { handleSave } from "@/utils/handleFunctions";
+import axios from "axios";
 
 const WorkflowEditor = () => {
   const { workflowId } = useParams();
@@ -124,28 +126,6 @@ const WorkflowEditor = () => {
     [onEdgesChange]
   );
 
-  const handleSave = () => {
-    const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
-    const workflowIndex = allWorkflows.findIndex(
-      (w: any) => w.id === Number(workflowId)
-    );
-
-    if (workflowIndex !== -1) {
-      allWorkflows[workflowIndex] = {
-        ...allWorkflows[workflowIndex],
-        title: workflowTitle,
-        nodes,
-        connections: edges,
-      };
-      localStorage.setItem("workflows", JSON.stringify(allWorkflows));
-      toast.success("Workflow saved");
-      console.log("workflow saved:", allWorkflows[workflowIndex]);
-    } else {
-      // if not found, optional: push new
-      toast.error("Workflow not found to save");
-    }
-  };
-
   const handleNodeClick = (_event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
     // clear selected edge if any
@@ -160,15 +140,21 @@ const WorkflowEditor = () => {
     console.log("edge clicked:", edge);
   };
 
-  const handleAddNode = (type: string, ActionType: string) => {
+  const handleAddNode = (
+    type: string,
+    ActionType: string,
+    description: string|string[]
+  ) => {
+    const Desc=Array.isArray(description)?description[0]:description
     const newNode: Node = {
       id: `${Date.now()}`,
       type: ActionType === "Trigger" ? "input" : "default",
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: {
-        label: type,
+        label:Desc ,
         type,
         parameters: {},
+        description,
       },
     };
     setNodes((nds) => [...nds, newNode]);
@@ -223,15 +209,52 @@ const WorkflowEditor = () => {
           </div>
 
           <div className="flex gap-2 items-center">
-            <Button
-              variant="outline"
-              onClick={() => toast.info("Run coming soon")}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              Test
-            </Button>
+           <Button
+  variant="outline"
+  onClick={async () => {
+    try {
+      const raw = localStorage.getItem("validPayload");
+      if (!raw) {
+        toast.error("No payload found in localStorage");
+        return;
+      }
+      const payload = JSON.parse(raw);
 
-            <Button onClick={handleSave}>
+      const res = await axios.post(
+        "http://localhost:3000/api/v1/webhook/handle/5dd1a318-93ff-4301-b956-e7f28d78f5fb",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        toast.info("Executing workflow");
+      } else {
+        toast.error(`Unexpected status: ${res.status}`);
+      }
+    } catch (err) {
+      console.error(err);
+      // If axios error, better message:
+      const msg =
+        err?.response?.data?.message ||
+        err?.message ||
+        "Something went wrong";
+      toast.error(msg);
+    }
+  }}
+>test
+  <Play />
+</Button>
+
+            <Button
+              onClick={() =>
+                handleSave(nodes, edges, workflowId, workflowTitle)
+              }
+            >
               <Save className="mr-2 h-4 w-4" />
               Save
             </Button>

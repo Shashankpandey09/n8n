@@ -44,16 +44,17 @@ export async function sendEmail(
     workflowId: number,
     executionId: number,
     nodeId: string,
-    execTaskId: number 
+    subject:string,
+   
 ) {
     try {
-        const transporter = await getOrCreateTransporter(userID);
-
+        const transporter = await getOrCreateTransporter(1||userID);
+        console.log('hello')
         const mailOptions = {
             from: `"${from}" <${CredManager.getInstance().getCred("smtp")?.EMAIL_USER}>`,
             to: to,
             
-            subject: `Waiting for your reply! 👋`,
+            subject: `${subject} 👋`,
             html: body,
         };
 

@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Plus, Play, Trash2, Settings } from "lucide-react";
 import { toast } from "sonner";
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 
 interface Workflow {
   id: number;
@@ -19,42 +27,83 @@ const Dashboard = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
+    const currentUser = JSON.parse(
+      localStorage.getItem("currentUser") || "null"
+    );
     if (!currentUser) {
       navigate("/");
       return;
     }
 
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
-    const userWorkflows = allWorkflows.filter((w: any) => w.userId === currentUser.id);
+    const userWorkflows = allWorkflows.filter(
+      (w: any) => w.userId === currentUser.id
+    );
     setWorkflows(userWorkflows);
   }, [navigate]);
 
-  const handleCreateWorkflow = () => {
-    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "null");
-    const newWorkflow = {
-      id: Date.now(),
-      userId: currentUser.id,
-      title: "New Workflow",
-      nodes: [],
-      connections: [],
-      enabled: true,
-      createdAt: new Date().toISOString(),
-    };
+  const handleCreateWorkflow = async () => {
+    const currentUser = JSON.parse(
+      localStorage.getItem("currentUser") || "null"
+    );
+    //create a workflow in the backend
+    //need to send the tokens also
+    try {
+      const newWorkflow = {
+     
+        userId: currentUser.id,
+        title: "New Workflow",
+        nodes: [],
+        connections: [],
+        enabled: false,
+        createdAt: new Date().toISOString(),
+      };
 
-    const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
-    allWorkflows.push(newWorkflow);
-    localStorage.setItem("workflows", JSON.stringify(allWorkflows));
-    
-    navigate(`/workflow/${newWorkflow.id}`);
+      const res = await axios.post(
+        "http://localhost:3000/api/v1/workflow",
+        newWorkflow,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      const result = res.data;
+      if(!result.ok) return;
+      const allWorkflows = JSON.parse(
+        localStorage.getItem("workflows") || "[]"
+      );
+      //push res.data.workflows
+      allWorkflows.push(result.workflow);
+      localStorage.setItem("workflows", JSON.stringify(allWorkflows));
+
+      navigate(`/workflow/${result.workflow.id}`);
+    } catch (error) {
+      console.log('error while creating workflow----->',error)
+    }
   };
 
-  const handleDeleteWorkflow = (id: number) => {
-    const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
+  const handleDeleteWorkflow = async(id: number) => {
+    try {
+     const res= await axios.delete(`http://localhost:3000/api/v1/workflow/delete/${id}`,{
+      headers:{
+        'Content-Type':'application/json',
+        Authorization:`Bearer ${localStorage.getItem('token')}`
+      }
+    })
+    if(res.status==200){
+        const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
     const updated = allWorkflows.filter((w: any) => w.id !== id);
     localStorage.setItem("workflows", JSON.stringify(updated));
-    setWorkflows(workflows.filter(w => w.id !== id));
+    setWorkflows(workflows.filter((w) => w.id !== id));
     toast.success("Workflow deleted");
+    }
+    } catch (error) {
+      console.log(error)
+      toast.error('error occurred')
+    }
+
   };
 
   const handleLogout = () => {
@@ -78,7 +127,9 @@ const Dashboard = () => {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h2 className="text-3xl font-bold">Workflows</h2>
-            <p className="text-muted-foreground">Build and manage your automation workflows</p>
+            <p className="text-muted-foreground">
+              Build and manage your automation workflows
+            </p>
           </div>
           <Button onClick={handleCreateWorkflow}>
             <Plus className="mr-2 h-4 w-4" />
@@ -99,7 +150,10 @@ const Dashboard = () => {
         ) : (
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {workflows.map((workflow) => (
-              <Card key={workflow.id} className="hover:shadow-md transition-shadow">
+              <Card
+                key={workflow.id}
+                className="hover:shadow-md transition-shadow"
+              >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>

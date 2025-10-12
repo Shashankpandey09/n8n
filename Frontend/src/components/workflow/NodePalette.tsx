@@ -23,7 +23,7 @@ const NodePalette = ({ onAddNode, nodes }) => {
       <CardContent className="space-y-2 px-0">
         {/* 2. Map directly over the imported definitions */}
         {nodeDefinitions.map(
-          ({ type, icon: Icon, label, description, category }) => {
+          ({ type, icon: Icon, label, description, category },i) => {
             const isTrigger = category === "Trigger";
             const isWebhookButton = type.toLowerCase() === "webhook";
             
@@ -33,7 +33,7 @@ const NodePalette = ({ onAddNode, nodes }) => {
 
             return (
               <Button
-                key={type} // Use type as the key
+                key={i} // Use type as the key
                 variant="outline"
                 className={`w-full justify-start h-auto p-3 ${
                   isDisabled ? "opacity-60 pointer-events-auto" : ""
@@ -47,7 +47,7 @@ const NodePalette = ({ onAddNode, nodes }) => {
                     toast.error("Add a Trigger (e.g. Webhook) first to enable actions.");
                     return;
                   }
-                  onAddNode(type, category); // Pass type and category
+                  onAddNode(type, category,description); // Pass type and category
                 }}
                 aria-disabled={isDisabled}
               >
@@ -56,7 +56,7 @@ const NodePalette = ({ onAddNode, nodes }) => {
                   <div>
                     <div className="font-medium">{label}</div>
                     <div className="text-xs text-muted-foreground">
-                      {description}
+                      {Array.isArray(description)?description[0]:description}
                     </div>
                   </div>
                 </div>

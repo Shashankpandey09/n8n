@@ -24,21 +24,42 @@ const nodeDefinitions = [
       { name: 'chatId', label: 'Chat ID', type: 'string', required: true, placeholder: '@username or chat_id' },
       { name: 'text', label: 'Message Text', type: 'string', required: true, placeholder: 'Your message...' }
     ], 
-    credentials: [{ name:'telegram', required:true }] 
+    credentials: [{ name:'telegram', required:true,InputFields:null }] 
   },
   { 
     type: 'smtp', 
     category: 'Action', 
     icon: Send,
     label: "SMTP",
-    description: "Send an email",
+    description:[ "Send an email","Send&wait"],
     parameters: [
       { name: 'to', label: 'To', type: 'string', required: true, placeholder: 'recipient@example.com' },
       { name: 'subject', label: 'Subject', type: 'string', required: false, default: '' },
       { name: 'body', label: 'Body', type: 'string', required: true },
     ], 
-    credentials: [{ name:'smtp', required:true }] 
+   credentials: [{ name:'smtp', required:true ,InputFields:[{
+      name:'EMAIL_USER'
+    },{
+      name:'EMAIL_PASS'
+    }] }] 
   },
+  //    { 
+  //   type: 'smtp', 
+  //   category: 'Action', 
+  //   icon: Send,
+  //   label: "SMTP",
+  //   description: "",
+  //   parameters: [
+  //     { name: 'to', label: 'To', type: 'string', required: true, placeholder: 'recipient@example.com' },
+  //     { name: 'subject', label: 'Subject', type: 'string', required: false, default: '' },
+  //     { name: 'body', label: 'Body', type: 'string', required: true },
+  //   ], 
+  //   credentials: [{ name:'smtp', required:true ,InputFields:[{
+  //     name:'EMAIL_USER'
+  //   },{
+  //     name:'EMAIL_PASS'
+  //   }] }] 
+  // },
   { 
     type: 'discord', 
     category: 'Action',
@@ -61,22 +82,23 @@ const nodeDefinitions = [
       { name: 'httpMethod', label: 'Method', type: 'string', default: 'GET', required: true }
     ]
   },
-  { 
-    type: "database",
-    category: 'Action',
-    icon: Database,
-    label: "Database",
-    description: "Query database",
-    parameters: [] // No parameters by default
-  },
-  { 
-    type: "condition",
-    category: 'Action',
-    icon: GitBranch,
-    label: "Condition",
-    description: "Branch logic",
-    parameters: [] // No parameters by default
-  },
+  // { 
+  //   type: "database",
+  //   category: 'Action',
+  //   icon: Database,
+  //   label: "Database",
+  //   description: "Query database",
+  //   parameters: [] // No parameters by default
+  // },
+  // { 
+  //   type: "condition",
+  //   category: 'Action',
+  //   icon: GitBranch,
+  //   label: "Condition",
+  //   description: "Branch logic",
+  //   parameters: [] // No parameters by default
+  // },
+
 ];
 
 export default nodeDefinitions;

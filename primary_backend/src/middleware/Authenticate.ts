@@ -17,8 +17,8 @@ async function Authenticate(req: ExtendedReq, res: Response, next: NextFunction)
     const token = auth.split(" ")[1];
 
     const decoded = Jwt.verify(token, process.env.SECRET_KEY!) as JwtPayload | string;
-
-    if (typeof decoded === "string" || !decoded || typeof decoded.id !== "string") {
+      
+    if (typeof decoded === "string" || !decoded) {
       return res.status(401).json({ message: "Invalid token payload" });
     }
 

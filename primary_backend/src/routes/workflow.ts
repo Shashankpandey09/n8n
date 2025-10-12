@@ -113,7 +113,7 @@ WorkFlowRouter.put(
 
       // If invalid (non-runnable) return 400 with warnings
       if (!normalized.valid) {
-        return res.status(400).json({
+        return res.status(200).json({
           ok: true,
           WORKFLOW,
           runnable: false,

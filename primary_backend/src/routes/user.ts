@@ -3,6 +3,8 @@ import { Router,Response,Request } from "express";
 import bcrypt from 'bcrypt'
 import z from "zod";
 import jwt from "jsonwebtoken";
+import dotenv from 'dotenv'
+dotenv.config()
 export const UserRouter=Router()
 const SIGNup_SignInSchema=z.object({
  username:z.email(),

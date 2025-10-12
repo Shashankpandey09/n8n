@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import axios from "axios";
 
 const Auth = () => {
   const [isSignIn, setIsSignIn] = useState(true);
@@ -12,35 +13,25 @@ const Auth = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async(e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (isSignIn) {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find((u: any) => u.email === email && u.password === password);
+    console.log('sub')
+      //sending to the backend
+      const res=await axios.post(`http://localhost:3000/api/v1/user/${isSignIn?'signin':'signup'}`,{
+        username:email,
+        password
+      })
       
-      if (user) {
-        localStorage.setItem("currentUser", JSON.stringify(user));
-        toast.success("Signed in successfully");
+      if (res.status==200) {
+        localStorage.setItem("currentUser", JSON.stringify(res.data.user));
+        localStorage.setItem('token',res.data.token)
+        toast.success(`${isSignIn?'Signed in':'SignedUp'} successfully`);
         navigate("/dashboard");
       } else {
         toast.error("Invalid credentials");
+        console.log(res.data)
       }
-    } else {
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const userExists = users.find((u: any) => u.email === email);
-      
-      if (userExists) {
-        toast.error("User already exists");
-      } else {
-        const newUser = { id: Date.now(), email, password };
-        users.push(newUser);
-        localStorage.setItem("users", JSON.stringify(users));
-        localStorage.setItem("currentUser", JSON.stringify(newUser));
-        toast.success("Account created successfully");
-        navigate("/dashboard");
-      }
-    }
+    
   };
 
   return (
@@ -78,9 +69,9 @@ const Auth = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
+            <button onClick={handleSubmit}>
               {isSignIn ? "Sign In" : "Sign Up"}
-            </Button>
+          </button>
           </form>
           <div className="mt-4 text-center text-sm">
             <button
