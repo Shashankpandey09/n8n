@@ -35,7 +35,11 @@ WebhookRouter.get(
       //   return
       // }
       const Webhook = await prisma.webhook.findFirst({
-        where: { workflowId: workflowId },
+        where: { workflowId: workflowId,
+           workflow:{
+            userId:userId
+           }
+         },
       });
       if (!Webhook) {
         //create a webhook

@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import { Normalize_Conn, NormalizeForBackend } from "./NormalizeForBackend";
+import { Normalize_Conn, NormalizeForBackend, orderNodes } from "./NormalizeForBackend";
 import axios from "axios";
 
  export const handleSave = async(nodes,edges,workflowId,workflowTitle) => {
@@ -20,8 +20,10 @@ import axios from "axios";
       //normalize the workflow according to the backend and Post it to the backend
       const Formated_NODE=NormalizeForBackend(nodes)
       const formatedConn=Normalize_Conn(edges)
+      const orderedNodes=orderNodes(Formated_NODE,formatedConn)
+      
       const Payload={
-        nodes:Formated_NODE,connections:formatedConn
+        nodes:orderedNodes,connections:formatedConn
       }
       const res=await axios.put(`http://localhost:3000/api/v1/workflow/update/${workflowId}`,{workflow:Payload},{
         headers:{
@@ -36,7 +38,6 @@ import axios from "axios";
       localStorage.setItem("workflows", JSON.stringify(allWorkflows));
       localStorage.setItem('validPayload',JSON.stringify(Payload))
       toast.success("Workflow saved");
-      console.log("workflow saved:", allWorkflows[workflowIndex]);
     } else {
       // if not found, optional: push new
       toast.error("Workflow not found to save");

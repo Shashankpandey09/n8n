@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import nodeDefinitions from "./NodeDefinitions"; // 1. Import the single source of truth
 
 const NodePalette = ({ onAddNode, nodes }) => {
-  // Logic remains the same, but is now more robust
+  
   const hasTrigger = nodes.some(
     (n) => {
         const definition = nodeDefinitions.find(def => def.type === n.data.type);
@@ -52,7 +52,7 @@ const NodePalette = ({ onAddNode, nodes }) => {
                 aria-disabled={isDisabled}
               >
                 <div className="flex items-start gap-3 text-left">
-                  <Icon className="h-5 w-5 mt-0.5 shrink-0" />
+                  <Icon className="h-s5 w-5 mt-0.5 shrink-0" />
                   <div>
                     <div className="font-medium">{label}</div>
                     <div className="text-xs text-muted-foreground">

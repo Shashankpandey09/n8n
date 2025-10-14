@@ -24,11 +24,12 @@ import NodePalette from "@/components/workflow/NodePalette";
 import NodeInspector from "@/components/workflow/NodeInspector";
 import { handleSave } from "@/utils/handleFunctions";
 import axios from "axios";
+import { useWebhook } from "@/store/Webhook";
 
 const WorkflowEditor = () => {
   const { workflowId } = useParams();
   const navigate = useNavigate();
-
+  const path=useWebhook((s)=>s.WebhookUrl)
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
 
@@ -219,9 +220,9 @@ const WorkflowEditor = () => {
         return;
       }
       const payload = JSON.parse(raw);
-
+    console.log(path)
       const res = await axios.post(
-        "http://localhost:3000/api/v1/webhook/handle/5dd1a318-93ff-4301-b956-e7f28d78f5fb",
+        `http://localhost:3000/api/v1/webhook/handle/${path}`,
         payload,
         {
           headers: {
@@ -301,6 +302,7 @@ const WorkflowEditor = () => {
               setSelectedNode(updatedNode);
               console.log("node updated via inspector:", updatedNode);
             }}
+            workflowId={workflowId}
           />
         )}
 

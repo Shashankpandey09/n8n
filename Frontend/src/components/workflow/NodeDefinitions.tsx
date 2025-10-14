@@ -38,9 +38,10 @@ const nodeDefinitions = [
       { name: 'body', label: 'Body', type: 'string', required: true },
     ], 
    credentials: [{ name:'smtp', required:true ,InputFields:[{
-      name:'EMAIL_USER'
+      name:'EMAIL_USER',type:'input'
     },{
-      name:'EMAIL_PASS'
+      name:'EMAIL_PASS',
+      type:'password'
     }] }] 
   },
   //    { 
