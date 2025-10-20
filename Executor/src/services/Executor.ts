@@ -13,7 +13,6 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({ groupId: "test-group" });
 export const producer = kafka.producer();
 
-
 type Node = {
   id: string;
   type: string;
@@ -141,26 +140,66 @@ export async function Init() {
         try {
           switch (nodeToExecute.type) {
             case "discord":
-              let Message:
-                | { DiscordMessage?: string; EmailMessage?: string }
-                = {};
+            
+              //email message
               const { message } = JSON.parse(payload.ExecutionPayload);
-              //@ts-ignore
+               //discord message 
               const DiscMess = nodeToExecute.parameters?.message;
-              if (DiscMess) {
-                (Message.DiscordMessage = DiscMess),
-                  (Message.EmailMessage = message);
+            
+              const embed: any = {
+                title: `Workflow: ${payload.workflowId}`,
+
+                fields: [
+         
+                  {
+                    name: "Execution ID",
+                    value: String(payload.executionId),
+                    inline: true,
+                  },
+                  {
+                    name: "Node ID",
+                    value: String(nodeToExecute.id),
+                    inline: true,
+                  },
+                  {
+                    name: "Node Action",
+                    value: nodeToExecute.action ?? nodeToExecute.type,
+                    inline: true,
+                  },
+                ],
+                timestamp: new Date().toISOString(),
+              };
+              if (DiscMess){
+                embed.fields.push({
+                  name:'Fixed discord message',
+                  value:DiscMess,
+                  inline:true
+                })
               }
-              ok = await sendTelegram(
-                process.env.DISCORD_WEBHOOK!,
-                Object.keys(Message).length>1 ? JSON.stringify(Message) :DiscMess
-              );
+              if(message){
+                embed.fields.push({
+                  name:'email Reply',
+                  value:`${message.reply} 
+                  
+                  repliedTo: ${message.repliedTo} `
+                })
+              }
+              if (wf?.userId) {
+                embed.fields.push({
+                  name: "User ID",
+                  value: String(wf.userId),
+                  inline: true,
+                });
+              }
+              ok = await sendTelegram(process.env.DISCORD_WEBHOOK!, {
+                embeds: [embed],
+              });
               break;
 
             case "smtp":
-              console.log(nodeToExecute.parameters)
-              const { to, from, body,subject } = nodeToExecute.parameters;
-              const credential = await FetchCred("smtp", 1||wf?.userId!);
+              console.log(nodeToExecute.parameters);
+              const { to, from, body, subject } = nodeToExecute.parameters;
+              const credential = await FetchCred("smtp", 1 || wf?.userId!);
               if (credential) {
                 ok = await sendEmail(
                   to,
@@ -171,7 +210,7 @@ export async function Init() {
                   payload.workflowId,
                   payload.executionId,
                   nodeToExecute.id,
-                  subject,
+                  subject
                 );
               }
               break;

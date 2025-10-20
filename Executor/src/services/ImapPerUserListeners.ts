@@ -6,6 +6,7 @@ import { ImapFlow } from "imapflow";
 import { Kafka } from "kafkajs";
 import { FetchCred } from "../utils/FetchCreds";
 import { CredManager } from "../utils/CredManager";
+import { parseEmailReply } from "../utils/parseEmailReply";
 
 const kafka = new Kafka({ clientId: "Imap", brokers: ["localhost:9092"] });
 const producer = kafka.producer();
@@ -55,15 +56,13 @@ async function processMailAndResume(
       where: { id: waitEntry.id },
       data: { status: "REPLIED" },
     });
-
+   const { reply, repliedTo } = parseEmailReply(parsed.text);
     const resumePayload = {
       workflowId: waitEntry.workflowId,
       executionId: waitEntry.executionId,
       ExecutionPayload: JSON.stringify({
-        message:
-          typeof parsed.text === "string" && parsed.text.length > 0
-            ? parsed.text
-            : "",
+        message:{reply,repliedTo}
+          
       }),
     };
 

@@ -34,6 +34,7 @@ const nodeDefinitions = [
     description:[ "Send an email","Send&wait"],
     parameters: [
       { name: 'to', label: 'To', type: 'string', required: true, placeholder: 'recipient@example.com' },
+        { name: 'from', label: 'from', type: 'string', required: true, placeholder: 'recipient@example.com' },
       { name: 'subject', label: 'Subject', type: 'string', required: false, default: '' },
       { name: 'body', label: 'Body', type: 'string', required: true },
     ], 

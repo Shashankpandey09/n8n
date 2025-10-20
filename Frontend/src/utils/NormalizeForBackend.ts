@@ -33,47 +33,99 @@ export const Normalize_Conn = (conn: any[]) => {
 };
 type Node = any
 type Conn = { from: string; to: string };
+const isWait = (n?: Node) =>
+  ((n?.action ?? "").trim().toLowerCase() === "send&wait");
+export const orderNodes = (nodes: Node[], conns: Conn[]): Node[][] => {
+  const nodesById = new Map(nodes.map(n => [n.id, n]));
+  const adj = new Map<string, string[]>();
+  const indeg = new Map<string, number>();
 
-export const orderNodes = (nodes: Node[], conns: Conn[]): Node[] => {
-  // index nodes by id for O(1) lookups
-  const nodesById = new Map<string, Node>(nodes.map(n => [n.id, n]));
 
-  // map from source id -> array of target ids (preserves insertion order)
-  const connMap = new Map<string, string[]>();
+  for (const n of nodes) {
+    adj.set(n.id, []);
+    indeg.set(n.id, 0);
+  }
   for (const c of conns) {
-    if (!connMap.has(c.from)) connMap.set(c.from, []);
-    connMap.get(c.from)!.push(c.to);
+    if (!adj.has(c.from)) adj.set(c.from, []);
+    adj.get(c.from)!.push(c.to);
+    indeg.set(c.to, (indeg.get(c.to) ?? 0) + 1);
   }
 
-  // Set to preserve insertion order and dedupe by object identity
-  const ordered = new Set<Node>();
+  const readySet = new Set<string>();
+  for (const [id, d] of indeg.entries()) if (d === 0) readySet.add(id);
 
-  // helper predicate for "wait" nodes (case-insensitive)
-const isWait = (n?: Node): boolean =>
-  ((n?.action ?? "").trim().toLowerCase() === "send&wait");
+  const layers: Node[][] = [];
+  const emitted = new Set<string>();
 
-  // iterate connections in insertion order
-  for (const [fromId, toArr] of connMap.entries()) {
-    const fromNode = nodesById.get(fromId);
-    if (fromNode) ordered.add(fromNode);
-
-    const waitNodes: Node[] = [];
-    for (const targetId of toArr) {
-      const targetNode = nodesById.get(targetId);
-      if (!targetNode) continue; // skip missing node ids
-      if (isWait(targetNode)) waitNodes.push(targetNode);
-      else ordered.add(targetNode);
+  while (readySet.size > 0) {
+    // split ready into non-wait and wait
+    const nonWaitIds: string[] = [];
+    const waitIds: string[] = [];
+    for (const id of readySet) {
+      if (emitted.has(id)) continue;
+      const n = nodesById.get(id);
+      if (isWait(n)) waitIds.push(id); else nonWaitIds.push(id);
     }
 
-    // add wait nodes after non-wait targets
-    for (const w of waitNodes) ordered.add(w);
+    const thisLayer: Node[] = [];
+    const nextReadyCandidates: string[] = [];
+    const deferredEdges: Array<[string, string]> = [];
+
+    if (nonWaitIds.length > 0) {
+      // Process all non-wait ready nodes (prefer them)
+      for (const id of nonWaitIds) {
+        if (emitted.has(id)) continue;
+        emitted.add(id);
+        thisLayer.push(nodesById.get(id)!);
+        // propagate immediately
+        for (const to of adj.get(id) ?? []) {
+          const newDeg = (indeg.get(to) ?? 0) - 1;
+          indeg.set(to, newDeg);
+          if (newDeg === 0 && !emitted.has(to)) {
+            // add to readySet immediately (so it can be processed in same or next loop)
+            nextReadyCandidates.push(to);
+          }
+        }
+        readySet.delete(id);
+      }
+      // keep waitIds in readySet (they remain for later)
+    } else {
+      // No non-wait nodes ready — process wait nodes now
+      for (const id of waitIds) {
+        if (emitted.has(id)) continue;
+        emitted.add(id);
+        thisLayer.push(nodesById.get(id)!);
+        // for wait nodes, treat outgoing edges as deferred until next epoch
+        for (const to of adj.get(id) ?? []) deferredEdges.push([id, to]);
+        readySet.delete(id);
+      }
+      // apply deferred edges to potentially make their targets ready in next iteration
+      for (const [, to] of deferredEdges) {
+        const newDeg = (indeg.get(to) ?? 0) - 1;
+        indeg.set(to, newDeg);
+        if (newDeg === 0 && !emitted.has(to)) nextReadyCandidates.push(to);
+      }
+    }
+
+    if (thisLayer.length > 0) layers.push(thisLayer);
+
+    // refill readySet with unique nextReadyCandidates (excluding emitted)
+    for (const id of nextReadyCandidates) {
+      if (!emitted.has(id)) readySet.add(id);
+    }
+
+    // guard: remove already emitted ids
+    for (const id of Array.from(readySet)) {
+      if (emitted.has(id)) readySet.delete(id);
+    }
   }
 
-  // finally include any nodes that never appeared in connections
-  for (const n of nodes) {
-    if (!ordered.has(n)) ordered.add(n);
-  }
+  // remaining nodes (cycles/unreachable) — append as final layer
+  const remaining = nodes.filter(n => !emitted.has(n.id));
+  if (remaining.length > 0) layers.push(remaining);
 
-  return Array.from(ordered);
+  return layers.flat();
 };
+
+
 
