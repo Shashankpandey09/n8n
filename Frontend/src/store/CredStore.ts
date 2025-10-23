@@ -1,31 +1,185 @@
+import axios from "axios";
+import { create } from "zustand";
 
-import axios from 'axios';
-import {create} from 'zustand'
-interface DataRow {  
-success:Boolean
-  platform?: string;
-  data?:string,
-   CreateCredentials:(name:string,credential:any)=>Promise<Boolean>
+type Credential = {
+  id?: number;
+  platform?: string | null;
+  data?: string | null;
+  createdAt?: string | null;
+  ok?: boolean;
+};
+
+interface CredState {
+  id: number | null;
+  platform: string | null;
+  data: string | null;
+  createdAt: string | null;
+  success: boolean;
+  credentialsMetaData: Pick<Credential, "createdAt" | "platform" | "id">[];
+  isLoading: boolean;
+  error: string | null;
+  createCredentials: (name: string, credential: unknown) => Promise<boolean>;
+  getAllCredentialsMetaData: () => Promise<Credential[]>;
+  getDecryptedCredential: (
+    id: number
+  ) => Promise<Pick<Credential, "data"> | null>;
 }
-export const CredStore=create<DataRow>((set)=>({
-  platform:null,
-  data:null,
-  success:false,
-  CreateCredentials:async(name,credential)=>{
-    try {
-        const res=  await axios.post('http://localhost:3000/api/v1/credential/',{name,credential},{
-    headers:{
-      'Content-Type':'application/json',
-      'Authorization':`Bearer ${localStorage.getItem('token')}`
-    }
+
+export const useCredStore = create<CredState>(
+  (set, get): CredState => ({
+    id: null,
+    platform: null,
+    data: null,
+    createdAt: null,
+    success: false,
+    credentialsMetaData: [],
+    isLoading: false,
+    error: null,
+
+    createCredentials: async (name, credential) => {
+      //here i need to update the credentialMeta array also the this function will be updated to create_updateCredentials
+      set({ isLoading: true, error: null });
+      try {
+        const token = localStorage.getItem("token");
+        const baseURL =
+          process.env.REACT_APP_API_URL ?? "http://localhost:3000";
+
+        const res = await axios.post<{ message?: Credential }>(
+          `${baseURL}/api/v1/credential/`,
+          { name, credential },
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+            timeout: 10000,
+          }
+        );
+
+        const msg = res.data?.message ?? null;
+
+        const ok = Boolean(msg?.ok ?? false);
+
+        const current = get().credentialsMetaData ?? [];
+
+        let nextMeta = current;
+        if (msg?.id != null) {
+          const exists = current.some((c) => c.id === msg.id);
+
+          const newMetaItem = {
+            id: msg.id,
+            platform: msg.platform ?? null,
+            createdAt: msg.createdAt ?? null,
+          };
+
+          nextMeta = exists
+            ? current.map((c) => (c.id === msg.id ? newMetaItem : c))
+            : [...current, newMetaItem];
+        }
+
+        set({
+          id: msg?.id ?? get().id,
+          platform: msg?.platform ?? get().platform,
+          data: msg?.data ?? get().data,
+          createdAt: msg?.createdAt ?? get().createdAt,
+          credentialsMetaData: nextMeta,
+          success: ok,
+          error: null,
+        });
+
+        return ok;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Unknown error";
+        console.error("createCredentials:", message);
+        set({ success: false, isLoading: false, error: message });
+        return false;
+      }
+    },
+    getAllCredentialsMetaData: async () => {
+      set({ isLoading: true, error: null });
+      try {
+        const token = localStorage.getItem("token");
+        const baseURL =
+          process.env.REACT_APP_API_URL ?? "http://localhost:3000";
+        const res = await axios.get<{
+          value: Pick<Credential, "id" | "platform" | "createdAt">[];
+        }>(`${baseURL}/api/v1/credentials`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        set({ isLoading: false, credentialsMetaData: res.data.value });
+        return res.data.value;
+      } catch (error: unknown) {
+        if (axios.isAxiosError(error)) {
+          const Error = error.response?.data?.error;
+          console.log(Error);
+          set({
+            success: false,
+            isLoading: false,
+            error: "error while fetching all credentials",
+          });
+        } else {
+          console.error("error while fetching all credentials", error);
+          set({
+            success: false,
+            isLoading: false,
+            error: "error while fetching all credentials",
+          });
+        }
+        return [];
+      }
+    },
+    getDecryptedCredential: async (id: number) => {
+      set({ isLoading: true, error: null });
+
+      try {
+        const token = localStorage.getItem("token");
+        const baseURL =
+          process.env.REACT_APP_API_URL ?? "http://localhost:3000";
+
+        const res = await axios.get<{ value: Pick<Credential, "data"> }>(
+          `${baseURL}/api/v1/credential/${id}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          }
+        );
+
+        const cred = res.data?.value ?? null;
+
+        if (cred) {
+          set({
+            id: id,
+            data: cred.data ?? null,
+            success: true,
+            error: null,
+          });
+        } else {
+          set({ success: false });
+        }
+
+        return cred;
+      } catch (err: unknown) {
+        
+        let message = "Error while fetching credential";
+        if (axios.isAxiosError<{ error?: string; message?: string }>(err)) {
+          message =
+            err.response?.data?.message ??
+            err.response?.data?.error ??
+            err.message ??
+            message;
+          console.error("API error:", err.response?.status, err.response?.data);
+        } else {
+          console.error("Unknown error:", err);
+        }
+
+        set({ success: false, error: message });
+        return null;
+      }
+    },
   })
-  console.log(res.data)
-  set({platform:res.data.message.platform,data:res.data.message.data,success:res.data.message.ok})
-  return CredStore.getState().success
-  }
-     catch (error) {
-     set({success:false})
-     return CredStore.getState().success 
-    }
-  }
-}))
+);
