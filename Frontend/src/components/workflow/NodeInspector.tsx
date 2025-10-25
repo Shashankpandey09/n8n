@@ -7,13 +7,13 @@ import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
 import nodeDefinitions from "./NodeDefinitions"; // Import the shared configuration
 import { toast } from "sonner";
-import { CredStore } from "@/store/CredStore";
+import { useCredStore } from "@/store/CredStore";
 import { useWebhook } from "@/store/Webhook";
 
 const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
   // find definition
   const nodeDefinition = nodeDefinitions.find((d) => d.type === node.data.type);
-  const CreateCredentials = CredStore((s) => s.CreateCredentials);
+  const CreateCredentials = useCredStore((s) => s.createCredentials);
   const getWebhookUrl = useWebhook((s) => s.getWebhookUrl);
   const path = useWebhook((s) => s.WebhookUrl);
 

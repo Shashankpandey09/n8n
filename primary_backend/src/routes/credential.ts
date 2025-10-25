@@ -84,7 +84,7 @@ CredRouter.delete(
 );
 //get route for credentials meta data
 CredRouter.get(
-  "/credentials",
+  "/",
   Authenticate,
   async (req: ExtendedReq, res: Response) => {
     try {

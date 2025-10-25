@@ -1,7 +1,8 @@
 import axios from "axios";
+import { error } from "console";
 import { create } from "zustand";
 
-type Credential = {
+export type Credential = {
   id?: number;
   platform?: string | null;
   data?: string | null;
@@ -9,7 +10,7 @@ type Credential = {
   ok?: boolean;
 };
 
-interface CredState {
+export interface CredState {
   id: number | null;
   platform: string | null;
   data: string | null;
@@ -42,7 +43,7 @@ export const useCredStore = create<CredState>(
       try {
         const token = localStorage.getItem("token");
         const baseURL =
-          process.env.REACT_APP_API_URL ?? "http://localhost:3000";
+          import.meta.env.VITE_URL_REACT_APP_API_URL  ?? "http://localhost:3000";
 
         const res = await axios.post<{ message?: Credential }>(
           `${baseURL}/api/v1/credential/`,
@@ -55,7 +56,7 @@ export const useCredStore = create<CredState>(
             timeout: 10000,
           }
         );
-
+        console.log(res)
         const msg = res.data?.message ?? null;
 
         const ok = Boolean(msg?.ok ?? false);
@@ -87,7 +88,7 @@ export const useCredStore = create<CredState>(
           error: null,
         });
 
-        return ok;
+        return true;
       } catch (err) {
         const message = err instanceof Error ? err.message : "Unknown error";
         console.error("createCredentials:", message);
@@ -100,10 +101,10 @@ export const useCredStore = create<CredState>(
       try {
         const token = localStorage.getItem("token");
         const baseURL =
-          process.env.REACT_APP_API_URL ?? "http://localhost:3000";
+          import.meta.env.VITE_REACT_APP_API_URL ?? "http://localhost:3000";
         const res = await axios.get<{
           value: Pick<Credential, "id" | "platform" | "createdAt">[];
-        }>(`${baseURL}/api/v1/credentials`, {
+        }>(`${baseURL}/api/v1/credential`, {
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
@@ -137,10 +138,10 @@ export const useCredStore = create<CredState>(
       try {
         const token = localStorage.getItem("token");
         const baseURL =
-          process.env.REACT_APP_API_URL ?? "http://localhost:3000";
+        import.meta.env.VITE_REACT_APP_API_URL  ?? "http://localhost:3000";
 
         const res = await axios.get<{ value: Pick<Credential, "data"> }>(
-          `${baseURL}/api/v1/credential/${id}`,
+          `${baseURL}/api/v1/credential/decrypted/${id}`,
           {
             headers: {
               "Content-Type": "application/json",
