@@ -110,7 +110,7 @@ CredRouter.get(
 );
 //get route for credential data decrypted
 CredRouter.get(
-  "/credential/decrypted/:id",
+  "/decrypted/:id",
   Authenticate,
   async (req: ExtendedReq, res: Response) => {
     try {

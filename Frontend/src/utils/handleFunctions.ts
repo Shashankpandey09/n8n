@@ -1,8 +1,9 @@
 import { toast } from "sonner";
+import type { Credential } from "@/store/CredStore";
 import { Normalize_Conn, NormalizeForBackend, orderNodes } from "./NormalizeForBackend";
 import axios from "axios";
 
- export const handleSave = async(nodes,edges,workflowId,workflowTitle) => {
+ export const handleSave = async(nodes,edges,workflowId,workflowTitle,savedCredentials:Pick<Credential, "createdAt" | "platform" | "id">[]) => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
     const workflowIndex = allWorkflows.findIndex(
       (w: any) => w.id === Number(workflowId)
@@ -18,7 +19,7 @@ import axios from "axios";
       };
 
       //normalize the workflow according to the backend and Post it to the backend
-      const Formated_NODE=NormalizeForBackend(nodes)
+      const Formated_NODE=NormalizeForBackend(nodes,savedCredentials)
       const formatedConn=Normalize_Conn(edges)
       const orderedNodes=orderNodes(Formated_NODE,formatedConn)
       

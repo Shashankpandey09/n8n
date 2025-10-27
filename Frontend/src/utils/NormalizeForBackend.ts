@@ -1,14 +1,17 @@
-export const NormalizeForBackend = (FrontendNodes: any) => {
+import type { Credential } from "@/store/CredStore";
+export const NormalizeForBackend = (FrontendNodes: any,savedCredentials:Pick<Credential, "createdAt" | "platform" | "id">[]) => {
+  //need all the credentials which are stored in the
   const finalPayLoad = [];
-
+  const credentialSet=new Set<string>(savedCredentials.map((s)=>s.platform))
   FrontendNodes.forEach((n) => {
+ 
     const action = Array.isArray(n?.data?.description)
       ? n?.data?.description[0]
       : n?.data?.description;
     const newNode = {
       id: n.id,
       meta: { ...n.position },
-      Credential: [n.data?.type],
+      Credential: credentialSet.has(n.data?.type)?[n.data?.type]:[],
       type: n.data?.type,
       parameters: n.data?.parameters,
       action: action,

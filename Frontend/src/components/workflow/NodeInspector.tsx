@@ -9,6 +9,7 @@ import nodeDefinitions from "./NodeDefinitions"; // Import the shared configurat
 import { toast } from "sonner";
 import { useCredStore } from "@/store/CredStore";
 import { useWebhook } from "@/store/Webhook";
+import { Link } from "react-router-dom";
 
 const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
   // find definition
@@ -16,7 +17,7 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
   const CreateCredentials = useCredStore((s) => s.createCredentials);
   const getWebhookUrl = useWebhook((s) => s.getWebhookUrl);
   const path = useWebhook((s) => s.WebhookUrl);
-
+  const StoredCred:string|null=useCredStore((s)=>s.credentialsMetaData.find((s)=>nodeDefinition.type===s?.platform)?.platform)
   // parameters state (apply defaults from definition)
   const [parameters, setParameters] = useState(() => {
     const initial = { ...(node.data?.parameters || {}) };
@@ -228,7 +229,7 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
                 </select>
 
                 <form onSubmit={handleSave} className="space-y-2">
-                  {selectedCredential &&
+                  {(selectedCredential && StoredCred==null)&&
                     nodeDefinition.credentials
                       .find((c) => c.name === selectedCredential)
                       ?.InputFields?.map((field) => (
@@ -245,7 +246,11 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
                         </div>
                       ))}
 
-                  <Button type="submit">Save credential</Button>
+                   {selectedCredential===StoredCred?
+                    
+                   
+                <Link to={'/credential'}>
+                    <Button>Update</Button> </Link>:<Button type="submit">Save credential</Button>}
                 </form>
               </div>
             </div>

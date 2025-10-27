@@ -25,6 +25,7 @@ import NodeInspector from "@/components/workflow/NodeInspector";
 import { handleSave } from "@/utils/handleFunctions";
 import axios from "axios";
 import { useWebhook } from "@/store/Webhook";
+import { useCredStore } from "@/store/CredStore";
 
 const WorkflowEditor = () => {
   const { workflowId } = useParams();
@@ -38,6 +39,7 @@ const WorkflowEditor = () => {
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
 
   const [workflowTitle, setWorkflowTitle] = useState("New Workflow");
+  const savedCredentials=useCredStore((s)=>s.credentialsMetaData)
 
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
@@ -253,7 +255,7 @@ const WorkflowEditor = () => {
 
             <Button
               onClick={() =>
-                handleSave(nodes, edges, workflowId, workflowTitle)
+                handleSave(nodes, edges, workflowId, workflowTitle,savedCredentials)
               }
             >
               <Save className="mr-2 h-4 w-4" />
