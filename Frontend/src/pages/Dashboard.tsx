@@ -11,7 +11,6 @@ import {
 import { Plus, Play, Trash2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
-import { v4 as uuidv4 } from "uuid";
 
 interface Workflow {
   id: number;
@@ -50,7 +49,6 @@ const Dashboard = () => {
     //need to send the tokens also
     try {
       const newWorkflow = {
-     
         userId: currentUser.id,
         title: "New Workflow",
         nodes: [],
@@ -113,52 +111,68 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <h1 className="text-xl font-bold">Workflow Automation</h1>
-          <Button variant="ghost" onClick={handleLogout}>
-            Logout
-          </Button>
+    <div className="min-h-screen bg-slate-50 text-slate-900">
+      {/* Top nav: subtle frosted bar, minimal */}
+      <header className="sticky top-0 z-20 border-b bg-white/60 backdrop-blur-sm">
+        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-6">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-lg font-semibold tracking-tight"
+            >
+              Workflow
+            </button>
+
+            <nav className="hidden md:flex items-center gap-4 text-sm text-slate-700">
+             
+              <button onClick={() => navigate("/credential")} className="hover:underline">Credentials</button>
+            </nav>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" onClick={() => navigate("/settings")}>Settings</Button>
+            <Button variant="secondary" onClick={handleLogout}>Logout</Button>
+          </div>
         </div>
       </header>
 
-      <main className="container mx-auto p-6">
-        <div className="mb-6 flex items-center justify-between">
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
             <h2 className="text-3xl font-bold">Workflows</h2>
-            <p className="text-muted-foreground">
-              Build and manage your automation workflows
-            </p>
+            <p className="text-sm text-slate-500">Build and manage your automation workflows</p>
           </div>
-          <Button onClick={handleCreateWorkflow}>
-            <Plus className="mr-2 h-4 w-4" />
-            New Workflow
-          </Button>
+
+          <div className="flex items-center gap-3">
+            <Button onClick={handleCreateWorkflow} className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white">
+              <Plus className="h-4 w-4" />
+              New Workflow
+            </Button>
+          </div>
         </div>
 
         {workflows.length === 0 ? (
-          <Card>
+          <Card className="border border-slate-200 bg-white shadow-sm">
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="mb-4 text-muted-foreground">No workflows yet</p>
-              <Button onClick={handleCreateWorkflow}>
+              <p className="mb-4 text-slate-500">No workflows yet</p>
+              <Button onClick={handleCreateWorkflow} className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white">
                 <Plus className="mr-2 h-4 w-4" />
                 Create Your First Workflow
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {workflows.map((workflow) => (
               <Card
                 key={workflow.id}
-                className="hover:shadow-md transition-shadow"
+                className="bg-white border border-slate-200 hover:shadow-lg transition-shadow"
               >
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle>{workflow.title}</CardTitle>
-                      <CardDescription>
+                      <CardTitle className="text-slate-900">{workflow.title}</CardTitle>
+                      <CardDescription className="text-slate-500">
                         {workflow.nodes.length} nodes
                       </CardDescription>
                     </div>
@@ -167,30 +181,35 @@ const Dashboard = () => {
                         variant="ghost"
                         size="icon"
                         onClick={() => navigate(`/workflow/${workflow.id}`)}
+                        aria-label={`Open ${workflow.title}`}
+                         className="hover:bg-transparent"
                       >
-                        <Settings className="h-4 w-4" />
+                        <Settings className="h-4 w-4 text-slate-700" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteWorkflow(workflow.id)}
+                        aria-label={`Delete ${workflow.title}`} 
+                        className="hover:bg-transparent"
                       >
-                        <Trash2 className="h-4 w-4" />
+                        <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700 z-10" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-slate-500">
                       {new Date(workflow.createdAt).toLocaleDateString()}
                     </span>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => toast.info("Execution coming soon")}
+                      className="flex items-center gap-2"
                     >
-                      <Play className="mr-2 h-3 w-3" />
+                      <Play className="mr-1 h-3 w-3" />
                       Run
                     </Button>
                   </div>
