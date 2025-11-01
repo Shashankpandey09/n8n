@@ -14,7 +14,7 @@ async function main() {
   while (1) {
     try {
       const workflows = await prisma.outbox.findMany({
-        where: { status: "UNSENT" },
+    where: { status: { in: ["TESTING", "UNSENT"] } },
         take: 10,
       });
       if (workflows.length === 0) {

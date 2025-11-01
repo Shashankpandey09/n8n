@@ -1,24 +1,27 @@
 import { useState, useEffect } from "react";
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { X } from "lucide-react";
-import nodeDefinitions from "./NodeDefinitions"; // Import the shared configuration
+import nodeDefinitions from "./NodeDefinitions";
 import { toast } from "sonner";
 import { useCredStore } from "@/store/CredStore";
 import { useWebhook } from "@/store/Webhook";
 import { Link } from "react-router-dom";
+import { LeftPanel, OutputPanel } from "../ui/panels";
 
 const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
-  // find definition
   const nodeDefinition = nodeDefinitions.find((d) => d.type === node.data.type);
   const CreateCredentials = useCredStore((s) => s.createCredentials);
   const getWebhookUrl = useWebhook((s) => s.getWebhookUrl);
   const path = useWebhook((s) => s.WebhookUrl);
-  const StoredCred:string|null=useCredStore((s)=>s.credentialsMetaData.find((s)=>nodeDefinition.type===s?.platform)?.platform)
-  // parameters state (apply defaults from definition)
+  const StoredCred: string | null = useCredStore(
+    (s) =>
+      s.credentialsMetaData.find((s) => nodeDefinition.type === s?.platform)
+        ?.platform
+  );
+
   const [parameters, setParameters] = useState(() => {
     const initial = { ...(node.data?.parameters || {}) };
     nodeDefinition?.parameters?.forEach((p) => {
@@ -29,15 +32,14 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
     return initial;
   });
 
-  // credential selection & fields
   const [selectedCredential, setSelectedCredential] = useState(
     () => node.data?.credentials?.selected ?? ""
   );
-  const [credentialFields, setCredentialFields] = useState(
-    () => ({ ...(node.data?.credentials?.fields || {}) })
-  );
+  const [credentialFields, setCredentialFields] = useState(() => ({
+    ...(node.data?.credentials?.fields || {}),
+  }));
+  const [testUrl,setTestUrl]=useState<boolean>(false)
 
-  // sync when node changes (or nodeDefinition changes)
   useEffect(() => {
     const initial = { ...(node.data?.parameters || {}) };
     nodeDefinition?.parameters?.forEach((p) => {
@@ -53,12 +55,10 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
 
   useEffect(() => {
     if (nodeDefinition?.type === "webhook") {
-      // create or load the webhook url
       getWebhookUrl(workflowId);
     }
-  }, [node]); // keep node as dependency to re-run when inspector switches nodes
+  }, [node]);
 
-  // update parameter locally and propagate
   const handleParameterChange = (key, value) => {
     const updated = { ...parameters, [key]: value };
     setParameters(updated);
@@ -68,9 +68,10 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
     });
   };
 
-  // when credential selection changes
   const handleCredentialSelect = (credentialName) => {
-    const def = nodeDefinition?.credentials?.find((c) => c.name === credentialName);
+    const def = nodeDefinition?.credentials?.find(
+      (c) => c.name === credentialName
+    );
     const newFields = {};
 
     if (def?.InputFields?.length) {
@@ -94,7 +95,6 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
     });
   };
 
-  // when credential sub-field changes
   const handleCredentialFieldChange = (fieldName, value) => {
     const updated = { ...credentialFields, [fieldName]: value };
     setCredentialFields(updated);
@@ -114,9 +114,14 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
   const handleSave = async (e) => {
     e.preventDefault();
     try {
-      const success = await CreateCredentials(nodeDefinition.type, credentialFields);
+      const success = await CreateCredentials(
+        nodeDefinition.type,
+        credentialFields
+      );
       if (success) {
-        toast.success(`Successfully created credentials for ${nodeDefinition.type}`);
+        toast.success(
+          `Successfully created credentials for ${nodeDefinition.type}`
+        );
       }
     } catch (error) {
       toast.error("Failed to create credentials");
@@ -124,140 +129,186 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
   };
 
   return (
-    <aside className="w-80 md:w-[32rem] border-l bg-card p-4 overflow-y-auto">
-      <Card className="border-0 shadow-none bg-transparent">
-        <CardHeader className="flex items-center justify-between px-0">
-          <CardTitle className="text-lg ">Node Settings</CardTitle>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4 " />
-          </Button>
-        </CardHeader>
+    <div className="flex gap-0 w-full h-full">
+      <div className="w-1/4 min-w-[260px]">
+        <LeftPanel nodeDefinition={nodeDefinition} path={path} />
+      </div>
 
-        <CardContent className="space-y-4 px-0">
-          <div className="space-y-2">
-            <Label htmlFor="nodeLabel" className="block text-sm font-medium ">
-              Action
-            </Label>
-            <select
-              onChange={(e) =>
-                onUpdate({
-                  ...node,
-                  data: { ...node.data, description: e.target.value },
-                })
-              }
-              id="nodeLabel"
-              className="mt-1 block w-full rounded-md border border-input bg-transparent py-2 pl-3 pr-10 text-sm  shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
-              value={node.data?.description ?? (Array.isArray(nodeDefinition?.description) ? nodeDefinition.description[0] : nodeDefinition?.description)}
-            >
-              {Array.isArray(nodeDefinition?.description) ? (
-                nodeDefinition.description.map((s) => (
-                  <option key={s} value={s} className="">
-                    {s}
-                  </option>
-                ))
-              ) : (
-                <option className="">{nodeDefinition?.description}</option>
-              )}
-            </select>
-          </div>
+      {/* CENTER: Node settings (kept logic identical) */}
+      <div className="flex-1 px-4 py-3 overflow-y-auto">
+        <Card className="border-0 shadow-none bg-transparent">
+          <CardHeader className="flex items-center justify-between px-0">
+            <CardTitle className="text-lg ">Node Settings</CardTitle>
+            <Button variant="ghost" size="icon" onClick={onClose}>
+              <X className="h-4 w-4 " />
+            </Button>
+          </CardHeader>
 
-          <div className="pt-4 border-t border-border">
-            <h3 className="text-sm font-medium mb-3 ">Parameters</h3>
-            <div className="space-y-4">
-              {nodeDefinition?.parameters?.length > 0 ? (
-                nodeDefinition.parameters.map((param) => (
-                  <div key={param.name} className="space-y-2">
-                    <Label htmlFor={param.name} className="flex items-center justify-between ">
-                      <span>{param.label || param.name}</span>
-                      {param.required && <span className="text-destructive">*</span>}
-                    </Label>
-
-                    <Input
-                      id={param.name}
-                      type={param.type || "text"}
-                      value={parameters[param.name] ?? ""}
-                      onChange={(e) => handleParameterChange(param.name, e.target.value)}
-                      placeholder={param.placeholder ?? param.default ?? ""}
-                      disabled={!!param.disabled}
-                      className="bg-transparent "
-                    />
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm ">No parameters available for this node type.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Webhook url path */}
-          {nodeDefinition?.type === "webhook" && (
-            <div className="space-y-1">
-              <Label htmlFor="webhook" className="block text-sm font-medium ">
-                Webhook URL
+          <CardContent className="space-y-4 px-0">
+            <div className="space-y-2">
+              <Label htmlFor="nodeLabel" className="block text-sm font-medium ">
+                Action
               </Label>
-              <p
-                id="webhook"
-                className="px-4 py-2 bg-muted border border-input rounded-lg text-sm  cursor-pointer shadow-sm hover:opacity-90 transition-all duration-150 select-all break-words"
-                title={`http://localhost:3000/api/v1/webhook/${path}`}
+              <select
+                onChange={(e) =>
+                  onUpdate({
+                    ...node,
+                    data: { ...node.data, description: e.target.value },
+                  })
+                }
+                id="nodeLabel"
+                className="mt-1 block w-full rounded-md border border-input bg-transparent py-2 pl-3 pr-10 text-sm  shadow-sm focus:border-primary focus:outline-none focus:ring-primary"
+                value={
+                  node.data?.description ??
+                  (Array.isArray(nodeDefinition?.description)
+                    ? nodeDefinition.description[0]
+                    : nodeDefinition?.description)
+                }
               >
-                {`http://localhost:3000/api/v1/webhook/${path}`}
-              </p>
-            </div>
-          ) }
-
-          {/* Credentials */}
-          {nodeDefinition?.credentials && nodeDefinition.credentials.length > 0 && (
-            <div className="pt-4 border-t border-border">
-              <h3 className="text-sm font-medium mb-3 ">Credentials</h3>
-              <div className="flex flex-col gap-2 mb-2">
-                <Label htmlFor="credentialSelect" className="text-sm ">
-                  Choose credential
-                </Label>
-
-                <select
-                  id="credentialSelect"
-                  value={selectedCredential}
-                  onChange={(e) => handleCredentialSelect(e.target.value)}
-                  className="px-3 py-2 rounded-md border border-input text-sm outline-none cursor-pointer w-full bg-transparent  shadow-sm focus:border-primary focus:ring-primary"
-                >
-                  <option value="" className="">-- none --</option>
-                  {nodeDefinition.credentials.map((c) => (
-                    <option key={c.name} value={c.name} className="">
-                      {c.name}
+                {Array.isArray(nodeDefinition?.description) ? (
+                  nodeDefinition.description.map((s) => (
+                    <option key={s} value={s} className="">
+                      {s}
                     </option>
-                  ))}
-                </select>
+                  ))
+                ) : (
+                  <option className="">{nodeDefinition?.description}</option>
+                )}
+              </select>
+            </div>
 
-                <form onSubmit={handleSave} className="space-y-2">
-                  {(selectedCredential && StoredCred==null)&&
-                    nodeDefinition.credentials
-                      .find((c) => c.name === selectedCredential)
-                      ?.InputFields?.map((field) => (
-                        <div key={field.name} className="space-y-1">
-                          <Label className="text-sm ">{field.name}</Label>
-                          <Input
-                            placeholder={field.name}
-                            required
-                            type={field.type}
-                            value={credentialFields[field.name] ?? ""}
-                            onChange={(e) => handleCredentialFieldChange(field.name, e.target.value)}
-                            className="bg-transparent "
-                          />
-                        </div>
-                      ))}
+            <div className="pt-4 border-t border-border">
+              <h3 className="text-sm font-medium mb-3 ">Parameters</h3>
+              <div className="space-y-4">
+                {nodeDefinition?.parameters?.length > 0 ? (
+                  nodeDefinition.parameters.map((param) => (
+                    <div key={param.name} className="space-y-2">
+                      <Label
+                        htmlFor={param.name}
+                        className="flex items-center justify-between "
+                      >
+                        <span>{param.label || param.name}</span>
+                        {param.required && (
+                          <span className="text-destructive">*</span>
+                        )}
+                      </Label>
 
-                   {selectedCredential===StoredCred?
-                    
-                   
-                <Link to={'/credential'}>
-                    <Button>Update</Button> </Link>:<Button type="submit">Save credential</Button>}
-                </form>
+                      <Input
+                        id={param.name}
+                        type={param.type || "text"}
+                        value={parameters[param.name] ?? ""}
+                        onChange={(e) =>
+                          handleParameterChange(param.name, e.target.value)
+                        }
+                        placeholder={param.placeholder ?? param.default ?? ""}
+                        disabled={!!param.disabled}
+                        className="bg-transparent "
+                      />
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm ">
+                    No parameters available for this node type.
+                  </p>
+                )}
               </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </aside>
+            {nodeDefinition?.type === "webhook" && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="webhook" className="text-sm font-medium">
+                    Webhook URL
+                  </Label>
+                  <div className="flex gap-2">
+                    <button  onClick={()=>setTestUrl(true)} className="px-3 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-all">
+                      Test
+                    </button>
+                    <button onClick={()=>setTestUrl(false)} className="px-3 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-all">
+                      Prod
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <p
+                    id="webhook"
+                    className="flex-1 px-4 py-2 bg-muted border border-input rounded-lg text-sm  shadow-sm hover:opacity-90 transition-all duration-150 select-all break-words"
+                    
+                  >
+                   {testUrl?`http://localhost:3000/api/v1/webhook/handle/test/${path}`:`http://localhost:3000/api/v1/webhook/handle/${path}`} 
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Credentials */}
+            {nodeDefinition?.credentials &&
+              nodeDefinition.credentials.length > 0 && (
+                <div className="pt-4 border-t border-border">
+                  <h3 className="text-sm font-medium mb-3 ">Credentials</h3>
+                  <div className="flex flex-col gap-2 mb-2">
+                    <Label htmlFor="credentialSelect" className="text-sm ">
+                      Choose credential
+                    </Label>
+
+                    <select
+                      id="credentialSelect"
+                      value={selectedCredential}
+                      onChange={(e) => handleCredentialSelect(e.target.value)}
+                      className="px-3 py-2 rounded-md border border-input text-sm outline-none cursor-pointer w-full bg-transparent  shadow-sm focus:border-primary focus:ring-primary"
+                    >
+                      <option value="">-- none --</option>
+                      {nodeDefinition.credentials.map((c) => (
+                        <option key={c.name} value={c.name} className="">
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+
+                    <form onSubmit={handleSave} className="space-y-2">
+                      {selectedCredential &&
+                        StoredCred == null &&
+                        nodeDefinition.credentials
+                          .find((c) => c.name === selectedCredential)
+                          ?.InputFields?.map((field) => (
+                            <div key={field.name} className="space-y-1">
+                              <Label className="text-sm ">{field.name}</Label>
+                              <Input
+                                placeholder={field.name}
+                                required
+                                type={field.type}
+                                value={credentialFields[field.name] ?? ""}
+                                onChange={(e) =>
+                                  handleCredentialFieldChange(
+                                    field.name,
+                                    e.target.value
+                                  )
+                                }
+                                className="bg-transparent "
+                              />
+                            </div>
+                          ))}
+
+                      {selectedCredential === StoredCred ? (
+                        <Link to={"/credential"}>
+                          <Button>Update</Button>
+                        </Link>
+                      ) : (
+                        <Button type="submit">Save credential</Button>
+                      )}
+                    </form>
+                  </div>
+                </div>
+              )}
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* RIGHT: Output */}
+      <div className="w-1/4 min-w-[260px]">
+        <OutputPanel />
+      </div>
+    </div>
   );
 };
 

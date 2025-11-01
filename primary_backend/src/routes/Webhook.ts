@@ -136,3 +136,83 @@ WebhookRouter.all("/handle/:path",Authenticate, async (req: ExtendedReq, res: Re
     );
   }
 });
+
+
+WebhookRouter.all(
+  "/handle/test/:path",
+  Authenticate,
+  async (req: ExtendedReq, res: Response) => {
+    try {
+      const pathParam = req.params.path;
+      const payload: any = req.body;
+      const webhook = await prisma.webhook.findUnique({
+        where: { path: pathParam },
+        select: {
+          workflowId: true,
+          workflow: {
+            select: {
+              enabled: true,
+            },
+          },
+        },
+      });
+
+      if (!webhook || !webhook.workflow?.enabled) {
+        return res
+          .status(400)
+          .json({ message: "Webhook does not exist or workflow is not enabled" });
+      }
+
+      await prisma.$transaction(async (ctx) => {
+        const Exec = await ctx.execution.upsert({
+          where:{
+            workflowId:webhook.workflowId,
+          },update:{
+            input:payload,
+          },
+          create:{
+             workflowId:webhook.workflowId,
+             status: "RUNNING",
+             input: payload,
+          },
+         include: {
+            workflow: {
+              select: {
+                nodes: true,
+              },
+            },
+          },
+        }
+      );
+        const nodes = (Exec.workflow.nodes as unknown) as Node[] | undefined;
+        const triggerNode = Array.isArray(nodes)
+          ? nodes.find((n) => n.type === "webhook")
+          : undefined;
+
+        if (!triggerNode) {
+          await ctx.execution.update({
+            where: { id: Exec.id },
+            data: { status: "FAILED" },
+          });
+          throw new Error("trigger node not found");
+        }
+
+        const nodeID = String(triggerNode.id);
+        await ctx.executionTask.create({
+          data: {
+            nodeId: nodeID,
+            executionId: Exec.id,
+            status: "RUNNING", 
+            attempts: 0,
+            input:payload
+          },
+        });
+      });
+
+      return res.status(200).json({ message: "Webhook test recorded" ,payload});
+    } catch (error: any) {
+      console.error("error in test webhook handler:", error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  }
+);

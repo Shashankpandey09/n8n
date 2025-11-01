@@ -40,7 +40,6 @@ export async function Init() {
         }
 
         const payload = JSON.parse(raw);
-        // basic validations
         if (
           !payload.workflowId ||
           !payload.executionId ||
@@ -50,7 +49,7 @@ export async function Init() {
             "message missing workflowId or executionId or payload",
             payload
           );
-          // commit offset to avoid reprocessing malformed message
+          // committing offset to avoid reprocessing malformed message
           await consumer.commitOffsets([
             {
               topic,

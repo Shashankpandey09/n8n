@@ -30,16 +30,15 @@ import { useCredStore } from "@/store/CredStore";
 const WorkflowEditor = () => {
   const { workflowId } = useParams();
   const navigate = useNavigate();
-  const path=useWebhook((s)=>s.WebhookUrl)
+  const path = useWebhook((s) => s.WebhookUrl);
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
 
-  // New: selectedEdge state to allow deleting/inspecting edges
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
 
   const [workflowTitle, setWorkflowTitle] = useState("New Workflow");
-  const savedCredentials=useCredStore((s)=>s.credentialsMetaData)
+  const savedCredentials = useCredStore((s) => s.credentialsMetaData);
 
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
@@ -52,7 +51,6 @@ const WorkflowEditor = () => {
     }
   }, [workflowId, setNodes, setEdges]);
 
-  // wrap onConnect
   const onConnect = useCallback(
     (params: Connection) =>
       setEdges((eds) => {
@@ -63,7 +61,6 @@ const WorkflowEditor = () => {
     [setEdges]
   );
 
-  // Log nodes/edges whenever they change (helps show all updates)
   useEffect(() => {
     console.log("nodes state updated:", nodes);
   }, [nodes]);
@@ -72,19 +69,17 @@ const WorkflowEditor = () => {
     console.log("edges state updated:", edges);
   }, [edges]);
 
-  // Handle deletions invoked by React Flow built-in change events
   const handleNodesDelete = useCallback(
     (deletedNodes: Node[]) => {
       const ids = deletedNodes.map((n) => n.id);
       setNodes((nds) => nds.filter((n) => !ids.includes(n.id)));
       console.log("onNodesDelete -> deleted nodes:", deletedNodes);
-      //deleting all the edges which are connected to this node
       const filteredEdges = edges.filter(
         (e) => !ids.includes(e.source) && !ids.includes(e.target)
       );
       console.log(filteredEdges);
       setEdges(filteredEdges);
-      // clear inspector if selected node was deleted
+
       if (selectedNode && ids.includes(selectedNode.id)) {
         setSelectedNode(null);
       }
@@ -111,10 +106,8 @@ const WorkflowEditor = () => {
     [setEdges, edges, selectedEdge]
   );
 
-  // Wrap the provided onNodesChange/onEdgesChange so we can also log the changes objects
   const handleNodesChange = useCallback(
     (changes: NodeChange[]) => {
-      // pass to original handler
       onNodesChange(changes);
       console.log("onNodesChange called:", changes);
     },
@@ -131,14 +124,12 @@ const WorkflowEditor = () => {
 
   const handleNodeClick = (_event: React.MouseEvent, node: Node) => {
     setSelectedNode(node);
-    // clear selected edge if any
     setSelectedEdge(null);
     console.log("node clicked:", node);
   };
 
   const handleEdgeClick = (_event: React.MouseEvent, edge: Edge) => {
     setSelectedEdge(edge);
-    // clear selected node if any
     setSelectedNode(null);
     console.log("edge clicked:", edge);
   };
@@ -146,15 +137,15 @@ const WorkflowEditor = () => {
   const handleAddNode = (
     type: string,
     ActionType: string,
-    description: string|string[]
+    description: string | string[]
   ) => {
-    const Desc=Array.isArray(description)?description[0]:description
+    const Desc = Array.isArray(description) ? description[0] : description;
     const newNode: Node = {
       id: `${Date.now()}`,
       type: ActionType === "Trigger" ? "input" : "default",
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: {
-        label:Desc ,
+        label: Desc,
         type,
         parameters: {},
         description,
@@ -166,7 +157,6 @@ const WorkflowEditor = () => {
     toast.success(`${type} node added`);
   };
 
-  // toolbar delete button (deletes currently selected node or edge)
   const handleDeleteSelection = () => {
     if (selectedNode) {
       handleNodesDelete([selectedNode]);
@@ -177,7 +167,6 @@ const WorkflowEditor = () => {
     }
   };
 
-  // Allow keyboard Delete key to remove selected node/edge
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Delete") {
@@ -212,50 +201,57 @@ const WorkflowEditor = () => {
           </div>
 
           <div className="flex gap-2 items-center">
-           <Button
-  variant="outline"
-  onClick={async () => {
-    try {
-      const raw = localStorage.getItem("validPayload");
-      if (!raw) {
-        toast.error("No payload found in localStorage");
-        return;
-      }
-      const payload = JSON.parse(raw);
-    console.log(path)
-      const res = await axios.post(
-        `http://localhost:3000/api/v1/webhook/handle/${path}`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }
-      );
+            <Button
+              variant="outline"
+              onClick={async () => {
+                try {
+                  const raw = localStorage.getItem("validPayload");
+                  if (!raw) {
+                    toast.error("No payload found in localStorage");
+                    return;
+                  }
+                  const payload = JSON.parse(raw);
+                  console.log(path);
+                  const res = await axios.post(
+                    `http://localhost:3000/api/v1/webhook/handle/${path}`,
+                    payload,
+                    {
+                      headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${localStorage.getItem(
+                          "token"
+                        )}`,
+                      },
+                    }
+                  );
 
-      if (res.status === 200) {
-        toast.info("Executing workflow");
-      } else {
-        toast.error(`Unexpected status: ${res.status}`);
-      }
-    } catch (err) {
-      console.error(err);
-      // If axios error, better message:
-      const msg =
-        err?.response?.data?.message ||
-        err?.message ||
-        "Something went wrong";
-      toast.error(msg);
-    }
-  }}
->test
-  <Play />
-</Button>
-
+                  if (res.status === 200) {
+                    toast.info("Executing workflow");
+                  } else {
+                    toast.error(`Unexpected status: ${res.status}`);
+                  }
+                } catch (err) {
+                  console.error(err);
+                  const msg =
+                    err?.response?.data?.message ||
+                    err?.message ||
+                    "Something went wrong";
+                  toast.error(msg);
+                }
+              }}
+            >
+              test
+              <Play />
+            </Button>
             <Button
               onClick={() =>
-                handleSave(nodes, edges, workflowId, workflowTitle,savedCredentials)
+                handleSave(
+                  nodes,
+                  edges,
+                  workflowId,
+                  workflowTitle,
+                  savedCredentials
+                )
               }
             >
               <Save className="mr-2 h-4 w-4" />
