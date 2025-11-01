@@ -8,6 +8,7 @@ const NodeRouter = Router();
 NodeRouter.get("/get", Authenticate, async (req: Request, res: Response) => {
   try {
     const { nodeData } = req.query;
+    console.log(nodeData)
 //node data is nodeId
     if (!nodeData || typeof nodeData !== "string") {
       return res.status(400).json({ error: "NodeId is required" });
@@ -15,7 +16,10 @@ NodeRouter.get("/get", Authenticate, async (req: Request, res: Response) => {
     // Fetch node from DB
     const node =await prisma.executionTask.findFirst({
       where:{
-        nodeId:nodeData
+        nodeId:nodeData,
+        startedAt:{
+          lt: new Date()
+        }
       },
       select:{
         input:true,
@@ -23,10 +27,8 @@ NodeRouter.get("/get", Authenticate, async (req: Request, res: Response) => {
         error:true,
       }
     })
-    if (!node) {
-      return res.status(404).json({ error: "Node not found" });
-    }
-
+    
+     console.log(node)
     return res.status(200).json({
       message: "Node data fetched successfully",
       data: node,

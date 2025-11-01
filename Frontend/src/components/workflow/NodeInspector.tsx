@@ -15,10 +15,11 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
   const nodeDefinition = nodeDefinitions.find((d) => d.type === node.data.type);
   const CreateCredentials = useCredStore((s) => s.createCredentials);
   const getWebhookUrl = useWebhook((s) => s.getWebhookUrl);
+  const clearPayload=useWebhook((s)=>s.clearPayloads)
   const path = useWebhook((s) => s.WebhookUrl);
   const StoredCred: string | null = useCredStore(
     (s) =>
-      s.credentialsMetaData.find((s) => nodeDefinition.type === s?.platform)
+      s.credentialsMetaData.find((s) => nodeDefinition?.type === s?.platform)
         ?.platform
   );
 
@@ -38,7 +39,7 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
   const [credentialFields, setCredentialFields] = useState(() => ({
     ...(node.data?.credentials?.fields || {}),
   }));
-  const [testUrl,setTestUrl]=useState<boolean>(false)
+  const [testUrl, setTestUrl] = useState<boolean>(false);
 
   useEffect(() => {
     const initial = { ...(node.data?.parameters || {}) };
@@ -57,6 +58,7 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
     if (nodeDefinition?.type === "webhook") {
       getWebhookUrl(workflowId);
     }
+    clearPayload()
   }, [node]);
 
   const handleParameterChange = (key, value) => {
@@ -76,6 +78,7 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
 
     if (def?.InputFields?.length) {
       def.InputFields.forEach((f) => {
+        // prefer existing saved field value if present
         newFields[f.name] = node.data?.credentials?.fields?.[f.name] ?? "";
       });
     }
@@ -128,14 +131,19 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
     }
   };
 
+
+
   return (
-    <div className="flex gap-0 w-full h-full">
-      <div className="w-1/4 min-w-[260px]">
-        <LeftPanel nodeDefinition={nodeDefinition} path={path} />
+    
+    <div className="flex w-full h-full">
+      {/* LEFT: fixed width, non-shrinking */}
+      <div className="w-[360px] flex-shrink-0 min-w-[280px]">
+        <LeftPanel nodeDefinition={nodeDefinition} path={path} nodeId={node.id} />
       </div>
 
-      {/* CENTER: Node settings (kept logic identical) */}
-      <div className="flex-1 px-4 py-3 overflow-y-auto">
+    
+      <div className="flex-1 px-4 py-3 overflow-y-auto min-w-0">
+        {/* min-w-0 ensures the center can shrink properly inside flex so overflow works */}
         <Card className="border-0 shadow-none bg-transparent">
           <CardHeader className="flex items-center justify-between px-0">
             <CardTitle className="text-lg ">Node Settings</CardTitle>
@@ -213,6 +221,7 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
                 )}
               </div>
             </div>
+
             {nodeDefinition?.type === "webhook" && (
               <div className="space-y-1">
                 <div className="flex items-center justify-between">
@@ -220,10 +229,16 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
                     Webhook URL
                   </Label>
                   <div className="flex gap-2">
-                    <button  onClick={()=>setTestUrl(true)} className="px-3 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-all">
+                    <button
+                      onClick={() => setTestUrl(true)}
+                      className="px-3 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-all"
+                    >
                       Test
                     </button>
-                    <button onClick={()=>setTestUrl(false)} className="px-3 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-all">
+                    <button
+                      onClick={() => setTestUrl(false)}
+                      className="px-3 py-1 text-xs rounded-md border border-border bg-background hover:bg-muted transition-all"
+                    >
                       Prod
                     </button>
                   </div>
@@ -233,9 +248,10 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
                   <p
                     id="webhook"
                     className="flex-1 px-4 py-2 bg-muted border border-input rounded-lg text-sm  shadow-sm hover:opacity-90 transition-all duration-150 select-all break-words"
-                    
                   >
-                   {testUrl?`http://localhost:3000/api/v1/webhook/handle/test/${path}`:`http://localhost:3000/api/v1/webhook/handle/${path}`} 
+                    {testUrl
+                      ? `http://localhost:3000/api/v1/webhook/handle/test/${path}`
+                      : `http://localhost:3000/api/v1/webhook/handle/${path}`}
                   </p>
                 </div>
               </div>
@@ -304,8 +320,8 @@ const NodeInspector = ({ node, onClose, onUpdate, workflowId }) => {
         </Card>
       </div>
 
-      {/* RIGHT: Output */}
-      <div className="w-1/4 min-w-[260px]">
+      {/* RIGHT: fixed width, non-shrinking */}
+      <div className="w-[640px] flex-shrink-0 min-w-[300px]">
         <OutputPanel />
       </div>
     </div>

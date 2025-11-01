@@ -173,7 +173,6 @@ export const useCredStore = create<CredState>((set, get): CredState => ({
     }
   },
 
-  // -------------------- NEW: deleteCredential --------------------
   deleteCredential: async (platform: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -181,7 +180,7 @@ export const useCredStore = create<CredState>((set, get): CredState => ({
       const baseURL =
         import.meta.env.VITE_REACT_APP_API_URL ?? "http://localhost:3000";
 
-      // backend route expects query param `platform` on DELETE /delete
+      
       const url = `${baseURL}/api/v1/credential/delete?platform=${encodeURIComponent(
         platform
       )}`;
@@ -194,8 +193,6 @@ export const useCredStore = create<CredState>((set, get): CredState => ({
         timeout: 10000,
       });
 
-      // If backend returns the deleted record (res.data) you can use it.
-      // We'll optimistically remove any metadata with matching platform.
       const current = get().credentialsMetaData ?? [];
       const nextMeta = current.filter((c) => c.platform !== platform);
 

@@ -173,10 +173,17 @@ WorkFlowRouter.delete(
           .status(404)
           .json({ ok: false, message: "Workflow not found or not accessible" });
       }
-
-      await prisma.workflow.delete({
+       await prisma.$transaction(async(ctx)=>{
+        await ctx.webhook.delete({
+          where:{
+            workflowId:workflowId
+          }
+        })
+       await ctx.workflow.delete({
         where: { id: workflowId },
       });
+       })
+     
 
       return res
         .status(200)

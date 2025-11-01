@@ -140,7 +140,6 @@ WebhookRouter.all("/handle/:path",Authenticate, async (req: ExtendedReq, res: Re
 
 WebhookRouter.all(
   "/handle/test/:path",
-  Authenticate,
   async (req: ExtendedReq, res: Response) => {
     try {
       const pathParam = req.params.path;
@@ -156,8 +155,8 @@ WebhookRouter.all(
           },
         },
       });
-
-      if (!webhook || !webhook.workflow?.enabled) {
+     console.log(webhook)
+      if (!webhook ) {
         return res
           .status(400)
           .json({ message: "Webhook does not exist or workflow is not enabled" });
@@ -204,7 +203,8 @@ WebhookRouter.all(
             executionId: Exec.id,
             status: "RUNNING", 
             attempts: 0,
-            input:payload
+            output:payload,
+            startedAt:new Date()
           },
         });
       });
