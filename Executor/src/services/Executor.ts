@@ -24,7 +24,7 @@ type Node = {
 export async function Init() {
   await consumer.connect();
   await producer.connect();
-  await consumer.subscribe({ topic: "workflows", fromBeginning: true });
+  await consumer.subscribe({ topic: "quickstart-events", fromBeginning: true });
   console.log("consumer got connected");
 
   await consumer.run({

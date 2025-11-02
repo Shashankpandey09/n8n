@@ -68,7 +68,7 @@ async function processMailAndResume(
 
     // Send to Kafka to resume the workflow.
     await producer.send({
-      topic: "workflows",
+      topic: "quickstart-events",
       messages: [{ value: JSON.stringify(resumePayload) }],
     });
 
