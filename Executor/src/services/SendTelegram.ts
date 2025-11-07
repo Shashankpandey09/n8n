@@ -27,11 +27,11 @@ export async function sendTelegram(WebhookUrl: string, message:  object) {
     if (res.status === 204 || (res.status >= 200 && res.status < 300)) {
       console.log("DISCORD webhook executed (status:", res.status, ")");
      
+     
      return {
       success:true,
       status: 'SUCCESS',
       data: res.data ?? null,
-     
     };
     }
 

@@ -9,6 +9,7 @@ import { getParentNode } from "../utils/getParents";
 import { executionHelper } from "../utils/helper";
 import { Prisma, TaskStatus } from "@shashankpandey/prisma/generated/prisma";
 import { parse_Node_Parameters } from "../utils/parse_Node_Parameters";
+import { InputJsonValue } from "@shashankpandey/prisma/generated/prisma/runtime/library";
 
 dotenv.config();
 
@@ -38,8 +39,8 @@ export async function Init() {
         const payload = JSON.parse(raw);
         if (
           !payload.workflowId ||
-          !payload.executionId ||
-          !payload.ExecutionPayload
+          !payload.executionId 
+       
         ) {
           console.warn(
             "message missing workflowId or executionId or payload",
@@ -58,7 +59,7 @@ export async function Init() {
 
         // loading workflow nodes
         const wf = await prisma.workflow.findUnique({
-          where: { id: payload.workflowId },
+          where: { id: Number(payload.workflowId) },
           select: { nodes: true, userId: true, connections: true },
         });
 
@@ -79,6 +80,8 @@ export async function Init() {
         const prevTaskNodes = await executionHelper.getPreviousExecutionTasks(
           payload.executionId
         );
+        console.log('previous tasks');
+        console.log(prevTaskNodes)
 
         const doneNodeIds = new Set(prevTaskNodes.map((p) => String(p.nodeId)));
 
@@ -89,7 +92,7 @@ export async function Init() {
         // - Else -> pick the first node that hasn't run yet (full-run)
         let nodeToExecute = null;
 
-        if (targetNodeId) {
+        if (targetNodeId&&payload.isTest) {
           nodeToExecute = nodes.find(
             (n) => String(n.id) === String(targetNodeId)
           );
@@ -169,10 +172,9 @@ export async function Init() {
               status: "RUNNING",
               attempts: 1,
               input:
-                typeof parent_node_Output === null ||
-                typeof parent_node_Output === "undefined"
+                 parent_node_Output === null
                   ? Prisma.JsonNull
-                  : parentNodeId,
+                  : parent_node_Output,
             },
           });
         } catch (e: any) {
@@ -195,7 +197,7 @@ export async function Init() {
 
         try {
           //email message
-          const { message } = JSON.parse(payload.ExecutionPayload);
+  
           // need to check wether the parameters of node are fixed or {{$Json.Expression}}
           //A function that parse the node parameters and mutates the key value pair on the basis of expression (string or json)
           //This accepts the parent node output object and the node parameters
@@ -203,6 +205,7 @@ export async function Init() {
             nodeToExecute.parameters,
             parent_node_Output!
           );
+          console.log(parsedParameters)
           switch (nodeToExecute.type) {
             case "discord":
               //discord message
@@ -237,14 +240,6 @@ export async function Init() {
                   inline: true,
                 });
               }
-              if (message) {
-                embed.fields.push({
-                  name: "email Reply",
-                  value: `${message.reply} 
-                  
-                  repliedTo: ${message.repliedTo} `,
-                });
-              }
               if (wf?.userId) {
                 embed.fields.push({
                   name: "User ID",
@@ -261,16 +256,16 @@ export async function Init() {
               console.log(nodeToExecute.parameters);
 
               const { to, from, body, subject } = parsedParameters;
-              const Body = body.length > 0 ? body : message;
+              
               const credential = await FetchCred("smtp", wf?.userId!);
               if (credential) {
                 ok = await sendEmail(
                   to,
                   from,
-                  Body,
+                  body,
                   wf?.userId!,
                   nodeToExecute.action,
-                  payload.workflowId,
+                  Number(payload.workflowId),
                   payload.executionId,
                   nodeToExecute.id,
                   subject
@@ -280,12 +275,14 @@ export async function Init() {
 
             default:
               console.log("unknown node type:", nodeToExecute.type);
+              ok={success:false}
               break;
           }
 
           // mark task success
 
           if (ok!.success) {
+            console.log(ok)
             await prisma.executionTask.update({
               where: { id: task.id },
               data: {
@@ -295,7 +292,7 @@ export async function Init() {
                     : TaskStatus.SUCCESS,
                 },
                 finishedAt: new Date(),
-                output: JSON.stringify(ok?.data),
+                output:ok?.data?ok.data as InputJsonValue:Prisma.JsonNull
               },
               //i need to push The workflow id and execution id
             });

@@ -11,7 +11,6 @@ export class ExecutionHelper {
   private static instance: ExecutionHelper | null = null;
 
   private previousNodesOutput: NodeOutput[] | null = null;
-  private lastExecutionId: number | null = null;
 
   private constructor() {}
 
@@ -26,21 +25,18 @@ export class ExecutionHelper {
     executionId: number
   ): Promise<NodeOutput[]> {
     // if same executionId, return cached data
-    if (this.lastExecutionId === executionId && this.previousNodesOutput) {
-      return this.previousNodesOutput;
-    }
-
+  
     const rows = await prisma.executionTask.findMany({
       where: { executionId },
       select: { nodeId: true, output: true },
     });
-
+    console.log("rows")
+    console.log(rows)
     this.previousNodesOutput = rows.map((r) => ({
       nodeId: String(r.nodeId),
       output: (r.output ?? null) as JsonValue | null,
     }));
 
-    this.lastExecutionId = executionId;
     return this.previousNodesOutput;
   }
 
@@ -50,13 +46,14 @@ export class ExecutionHelper {
     const found = this.previousNodesOutput.find(
       (n) => String(n.nodeId) === String(parentNodeId)
     );
-
+    console.log('found')
+    console.log(found)
     return found?.output ?? null;
   }
 
   public clearCache() {
     this.previousNodesOutput = null;
-    this.lastExecutionId = null;
+   
   }
 }
 

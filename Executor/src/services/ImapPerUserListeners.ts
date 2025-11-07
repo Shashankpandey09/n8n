@@ -70,6 +70,7 @@ async function processMailAndResume(
       const taskId = await ctx.executionTask.findFirst({
         where: {
           nodeId: waitEntry.nodeId,
+          executionId:waitEntry.executionId
         },
         select: {
           id: true,
@@ -78,9 +79,11 @@ async function processMailAndResume(
       await ctx.executionTask.update({
         where: {
           id: taskId?.id,
+         
         },
         data: {
-          output: JSON.stringify(message),
+          output: message,
+           status:"SUCCESS"
         },
       });
     });

@@ -8,16 +8,20 @@ export const parse_Node_Parameters = (
   parameters: Record<string, any>,
   parent_node_Output: Prisma.JsonValue
 ): Record<string, any> => {
-  if (!parent_node_Output || typeof parent_node_Output !== "object") return parameters;
+  console.log( parent_node_Output)
 
+
+  if (!parent_node_Output ) return parameters;
   const regex = /\{\{\$Json\.([^\}]+)\}\}/g;
   const parsed: Record<string, any> = {};
 
   for (const key of Object.keys(parameters)) {
     const value = parameters[key];
+    console.log('value----->'+value)
     if (typeof value === "string") {
       parsed[key] = value.replace(regex, (_, path) => {
         const resolved = getDeepValue(parent_node_Output, path.trim());
+        console.log('resolved---->'+resolved)
         return resolved !== undefined ? String(resolved) : "";
       });
     } else {
