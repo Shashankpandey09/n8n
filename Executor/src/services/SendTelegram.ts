@@ -3,7 +3,11 @@ export async function sendTelegram(WebhookUrl: string, message:  object) {
   try {
     if (!WebhookUrl) {
       console.warn("No webhook URL provided");
-      return false;
+     return {
+      success:false,
+      status: 'FAILED',
+     
+    };
     }
 
     let body: any;
@@ -22,13 +26,23 @@ export async function sendTelegram(WebhookUrl: string, message:  object) {
 
     if (res.status === 204 || (res.status >= 200 && res.status < 300)) {
       console.log("DISCORD webhook executed (status:", res.status, ")");
-      return true;
+     
+     return {
+      success:true,
+      status: 'SUCCESS',
+      data: res.data ?? null,
+     
+    };
     }
 
     console.warn("Discord webhook returned non-success status:", res.status, res.data);
-    return false;
+    
   } catch (error: any) {
     console.error("discord webhook error:", error?.message ?? error);
-    throw error;
+     return {
+      success: false,
+      error: error?.message ?? "unknown error",
+      status:'FAILED'
+    };
   }
 }

@@ -48,7 +48,7 @@ export async function sendEmail(
    
 ) {
     try {
-        const transporter = await getOrCreateTransporter(1||userID);
+        const transporter = await getOrCreateTransporter(userID);
         console.log('hello')
         const mailOptions = {
             from: `"${from}" <${CredManager.getInstance().getCred("smtp")?.EMAIL_USER}>`,
@@ -78,15 +78,15 @@ export async function sendEmail(
                     },
                 });
                 console.log(`Created EmailWait entry, now waiting for a reply to: ${sentMessageId}`);
-                return false; // Correctly pauses the workflow
+                return {success:false,status:"PENDING",data:mailOptions}; // Correctly pauses the workflow
             } catch (error) {
                 console.warn("Could not create EmailWait entry in the DB:", error);
-                return true; // Resume workflow if DB write fails
+                return { success:true,status:"FAILED",data:mailOptions} // Resume workflow if DB write fails
             }
         }
-        return true;
+        return {success:true,status:"SUCCESS",data:mailOptions};
     } catch (error) {
         console.error("Error sending email:", error);
-        return false;
+        return {success:false,status:"FAILED",data:error};
     }
 }

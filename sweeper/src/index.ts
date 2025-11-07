@@ -23,7 +23,7 @@ async function main() {
       }
       //producing it to the kafka queue
       await producer.send({
-        topic: "workflows",
+        topic: "quickstart-events",
         messages: workflows.map((workflow) => ({
           value: JSON.stringify(workflow),
         })),

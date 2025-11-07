@@ -29,7 +29,7 @@ function main() {
         while (1) {
             try {
                 const workflows = yield prisma_1.default.outbox.findMany({
-                    where: { status: "UNSENT" },
+                    where: { status: { in: ["TESTING", "UNSENT"] } },
                     take: 10,
                 });
                 if (workflows.length === 0) {
@@ -38,7 +38,7 @@ function main() {
                 }
                 //producing it to the kafka queue
                 yield producer.send({
-                    topic: "workflows",
+                    topic: "quickstart-events",
                     messages: workflows.map((workflow) => ({
                         value: JSON.stringify(workflow),
                     })),

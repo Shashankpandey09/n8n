@@ -116,7 +116,10 @@ export function validate(nodes: NodeAny[] = [], connections: ConnAny[] = []) {
   }
 
   const valid = err.length === 0 && Object.keys(missingParams).length === 0&&missingCredId.size===0;
-
+  console.log("valid",valid)
+  console.log("err--->",err);
+  console.log("missign para---->",missingParams)
+  console.log("missgcred--->",missingCredId)
   return {
     nodes,
     connections,

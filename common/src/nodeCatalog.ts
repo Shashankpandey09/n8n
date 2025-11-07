@@ -27,7 +27,7 @@ export const nodeCatalog = [
     credentials: [{ name: 'smtp', required: true }] 
   },
   { 
-    type: 'discord', // The new Discord node type
+    type: 'discord', 
     category: 'Action', 
     parameters: [
       { name: 'WebhookUrl', type: 'string', required: true }, // The URL for the Discord webhook

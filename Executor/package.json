@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shashankpandey/prisma": "^1.1.9",
+    "@shashankpandey/prisma": "^1.2.1",
     "@types/axios": "^0.9.36",
     "@types/imapflow": "^1.0.23",
     "@types/kafkajs": "^1.8.2",

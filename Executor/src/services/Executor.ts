@@ -4,6 +4,12 @@ import { sendTelegram } from "./SendTelegram";
 import dotenv from "dotenv";
 import { FetchCred } from "../utils/FetchCreds";
 import { sendEmail } from "./sendMail";
+import type { Node, connections } from "../utils/types";
+import { getParentNode } from "../utils/getParents";
+import { executionHelper } from "../utils/helper";
+import { Prisma, TaskStatus } from "@shashankpandey/prisma/generated/prisma";
+import { parse_Node_Parameters } from "../utils/parse_Node_Parameters";
+
 dotenv.config();
 
 const kafka = new Kafka({
@@ -13,14 +19,6 @@ const kafka = new Kafka({
 const consumer = kafka.consumer({ groupId: "test-group" });
 export const producer = kafka.producer();
 
-type Node = {
-  id: string;
-  type: string;
-  parameters: any;
-  credentials?: Array<string>;
-  action: string;
-};
-
 export async function Init() {
   await consumer.connect();
   await producer.connect();
@@ -28,10 +26,8 @@ export async function Init() {
   console.log("consumer got connected");
 
   await consumer.run({
-    // disabling auto-commit so we only commit after successful processing
     autoCommit: false,
     eachMessage: async ({ topic, partition, message }) => {
-      // Wrap whole handler so exceptions are caught
       try {
         const raw = message.value?.toString();
         if (!raw) {
@@ -63,7 +59,7 @@ export async function Init() {
         // loading workflow nodes
         const wf = await prisma.workflow.findUnique({
           where: { id: payload.workflowId },
-          select: { nodes: true, userId: true },
+          select: { nodes: true, userId: true, connections: true },
         });
 
         const nodes = wf?.nodes as unknown as Node[] | undefined;
@@ -80,35 +76,91 @@ export async function Init() {
         }
 
         // load previous tasks for this execution (so we know which nodes already ran)
-        const prevTaskNodes = await prisma.executionTask.findMany({
-          where: { executionId: payload.executionId },
-          select: { nodeId: true },
-        });
+        const prevTaskNodes = await executionHelper.getPreviousExecutionTasks(
+          payload.executionId
+        );
 
         const doneNodeIds = new Set(prevTaskNodes.map((p) => String(p.nodeId)));
-        // find first node that is NOT present in prevTaskNodes
-        const remainingNodes = nodes.filter((n) => !doneNodeIds.has(n.id));
-        const nodeToExecute = remainingNodes.length ? remainingNodes[0] : null;
 
-        if (!nodeToExecute) {
-          console.log(
-            "no remaining nodes to execute for execution",
-            payload.executionId
+        // Read target node id from top-level message (not from stringified ExecutionPayload)
+        const targetNodeId = payload.targetNodeId ?? payload.targetId ?? null;
+
+        // - If targetNodeId is provided -> run that node (even if it's not in remainingNodes for this execution)
+        // - Else -> pick the first node that hasn't run yet (full-run)
+        let nodeToExecute = null;
+
+        if (targetNodeId) {
+          nodeToExecute = nodes.find(
+            (n) => String(n.id) === String(targetNodeId)
           );
-          // nothing to do; commit and exit
-          await consumer.commitOffsets([
-            {
-              topic,
-              partition,
-              offset: (Number(message.offset) + 1).toString(),
-            },
-          ]);
-          return;
+          if (!nodeToExecute) {
+            console.warn(
+              `targetNodeId ${targetNodeId} not found in workflow ${payload.workflowId} nodes`
+            );
+            
+            await consumer.commitOffsets([
+              {
+                topic,
+                partition,
+                offset: (Number(message.offset) + 1).toString(),
+              },
+            ]);
+            return;
+          }
+
+          // If node already executed in this execution and you don't want to re-run it, skip
+          if (doneNodeIds.has(String(nodeToExecute.id))) {
+            console.log(
+              `target node ${targetNodeId} already executed for execution ${payload.executionId}; skipping`
+            );
+            await consumer.commitOffsets([
+              {
+                topic,
+                partition,
+                offset: (Number(message.offset) + 1).toString(),
+              },
+            ]);
+            return;
+          }
+        } else {
+          // full-run path: choose first not-yet-done node (topological order assumed in `nodes`)
+          const remainingNodes = nodes.filter(
+            (n) => !doneNodeIds.has(String(n.id))
+          );
+          nodeToExecute = remainingNodes.length ? remainingNodes[0] : null;
+
+          if (!nodeToExecute) {
+            console.log(
+              "no remaining nodes to execute for execution",
+              payload.executionId
+            );
+            await prisma.execution.update({
+              where: { id: payload.executionId },
+              data: { status: "SUCCESS" },
+            });
+            await consumer.commitOffsets([
+              {
+                topic,
+                partition,
+                offset: (Number(message.offset) + 1).toString(),
+              },
+            ]);
+            return;
+          }
         }
 
-        // Attempt to register the node execution atomically (create task)
-        // It's good to make (executionId, nodeId) unique in schema to avoid races.
         let task;
+        //find the parent node
+        const parentNodeId = getParentNode(
+          nodes,
+          wf?.connections as unknown as connections[],
+          nodeToExecute.id
+        );
+        //parentNode can be null which states this is a single node execution
+        //if parent node exists then it's previous execution must have exist so get it from the prevtasks
+        const parent_node_Output = executionHelper.getParentNodeOutput(
+          parentNodeId!
+        );
         try {
           task = await prisma.executionTask.create({
             data: {
@@ -116,6 +168,11 @@ export async function Init() {
               nodeId: nodeToExecute.id,
               status: "RUNNING",
               attempts: 1,
+              input:
+                typeof parent_node_Output === null ||
+                typeof parent_node_Output === "undefined"
+                  ? Prisma.JsonNull
+                  : parentNodeId,
             },
           });
         } catch (e: any) {
@@ -134,22 +191,27 @@ export async function Init() {
           ]);
           return;
         }
-        let ok = null;
+        let ok;
 
         try {
+          //email message
+          const { message } = JSON.parse(payload.ExecutionPayload);
+          // need to check wether the parameters of node are fixed or {{$Json.Expression}}
+          //A function that parse the node parameters and mutates the key value pair on the basis of expression (string or json)
+          //This accepts the parent node output object and the node parameters
+          const parsedParameters = parse_Node_Parameters(
+            nodeToExecute.parameters,
+            parent_node_Output!
+          );
           switch (nodeToExecute.type) {
             case "discord":
-            
-              //email message
-              const { message } = JSON.parse(payload.ExecutionPayload);
-               //discord message 
-              const DiscMess = nodeToExecute.parameters?.message;
-            
+              //discord message
+              const DiscMess = parsedParameters?.message;
+
               const embed: any = {
                 title: `Workflow: ${payload.workflowId}`,
 
                 fields: [
-         
                   {
                     name: "Execution ID",
                     value: String(payload.executionId),
@@ -168,20 +230,20 @@ export async function Init() {
                 ],
                 timestamp: new Date().toISOString(),
               };
-              if (DiscMess){
+              if (DiscMess) {
                 embed.fields.push({
-                  name:'Fixed discord message',
-                  value:DiscMess,
-                  inline:true
-                })
+                  name: "Fixed discord message",
+                  value: DiscMess,
+                  inline: true,
+                });
               }
-              if(message){
+              if (message) {
                 embed.fields.push({
-                  name:'email Reply',
-                  value:`${message.reply} 
+                  name: "email Reply",
+                  value: `${message.reply} 
                   
-                  repliedTo: ${message.repliedTo} `
-                })
+                  repliedTo: ${message.repliedTo} `,
+                });
               }
               if (wf?.userId) {
                 embed.fields.push({
@@ -197,13 +259,15 @@ export async function Init() {
 
             case "smtp":
               console.log(nodeToExecute.parameters);
-              const { to, from, body, subject } = nodeToExecute.parameters;
-              const credential = await FetchCred("smtp", 1 || wf?.userId!);
+
+              const { to, from, body, subject } = parsedParameters;
+              const Body = body.length > 0 ? body : message;
+              const credential = await FetchCred("smtp", wf?.userId!);
               if (credential) {
                 ok = await sendEmail(
                   to,
                   from,
-                  body,
+                  Body,
                   wf?.userId!,
                   nodeToExecute.action,
                   payload.workflowId,
@@ -220,14 +284,23 @@ export async function Init() {
           }
 
           // mark task success
-          if (ok) {
+
+          if (ok!.success) {
             await prisma.executionTask.update({
               where: { id: task.id },
-              data: { status: "SUCCESS", finishedAt: new Date() },
+              data: {
+                status: {
+                  set: ok?.status
+                    ? (ok.status as TaskStatus)
+                    : TaskStatus.SUCCESS,
+                },
+                finishedAt: new Date(),
+                output: JSON.stringify(ok?.data),
+              },
               //i need to push The workflow id and execution id
             });
             await producer.send({
-              topic: "workflows",
+              topic: "quickstart-events",
               messages: [{ value: JSON.stringify(payload) }],
             });
           }

@@ -52,19 +52,38 @@ async function processMailAndResume(
     );
 
     // Update the EmailWait status using its unique ID to prevent reprocessing.
-    await prisma.emailWait.update({
-      where: { id: waitEntry.id },
-      data: { status: "REPLIED" },
-    });
-   const { reply, repliedTo } = parseEmailReply(parsed.text);
+
+    const message = parseEmailReply(parsed.text);
     const resumePayload = {
       workflowId: waitEntry.workflowId,
       executionId: waitEntry.executionId,
       ExecutionPayload: JSON.stringify({
-        message:{reply,repliedTo}
-          
+        message,
       }),
     };
+
+    await prisma.$transaction(async (ctx) => {
+      await ctx.emailWait.update({
+        where: { id: waitEntry.id },
+        data: { status: "REPLIED" },
+      });
+      const taskId = await ctx.executionTask.findFirst({
+        where: {
+          nodeId: waitEntry.nodeId,
+        },
+        select: {
+          id: true,
+        },
+      });
+      await ctx.executionTask.update({
+        where: {
+          id: taskId?.id,
+        },
+        data: {
+          output: JSON.stringify(message),
+        },
+      });
+    });
 
     // Send to Kafka to resume the workflow.
     await producer.send({
@@ -80,9 +99,13 @@ async function processMailAndResume(
 }
 
 // This function now correctly loops through all new messages.
-async function fetchAndProcessUnseen(client: ImapFlow, userId: number,startup:boolean=false) {
+async function fetchAndProcessUnseen(
+  client: ImapFlow,
+  userId: number,
+  startup: boolean = false
+) {
   try {
-  await client.mailboxOpen("INBOX", { readOnly: false });
+    await client.mailboxOpen("INBOX", { readOnly: false });
     // const uids = await client.search({ seen: false });
     // if (!uids) return;
 
@@ -106,12 +129,13 @@ async function fetchAndProcessUnseen(client: ImapFlow, userId: number,startup:bo
     // if the user is waiting for replies then initially fetch the in reply to headers
     const uids = await client.search({
       seen: false,
-      since: startup?new Date(Date.now() - 1000*24*3600):new Date(Date.now() - 10000*6)
+      since: startup
+        ? new Date(Date.now() - 1000 * 24 * 3600)
+        : new Date(Date.now() - 10000 * 6),
     });
     //printing uuids
-     console.log(uids)
+    console.log(uids);
     if (!uids || uids.length === 0) {
-     
       console.log("no uuid found");
       return;
     }
@@ -133,7 +157,7 @@ async function fetchAndProcessUnseen(client: ImapFlow, userId: number,startup:bo
         messageIdToProcess.push({ messageId, id });
         uuidsToProcess.push(id);
         UIDs.push(message.uid);
-        console.log(message.uid)
+        console.log(message.uid);
       }
     }
     console.log("uuuuids--->", uuidsToProcess);
@@ -142,7 +166,7 @@ async function fetchAndProcessUnseen(client: ImapFlow, userId: number,startup:bo
       console.log("No matching unseen replies found among unseen emails.");
       return;
     }
-   
+
     // now fetching source for these uuids
     for await (const msg of client.fetch(uuidsToProcess, { source: true })) {
       console.log(" before reached fetch");
@@ -151,7 +175,7 @@ async function fetchAndProcessUnseen(client: ImapFlow, userId: number,startup:bo
         const message = messageIdToProcess.find(
           (e) => e.id === Number(msg.seq)
         );
-        console.log(message?.id)
+        console.log(message?.id);
         await processMailAndResume(msg.source, userId, message?.messageId!);
       }
     }
@@ -186,7 +210,7 @@ async function startListening(wait: { userId: number }) {
     const client = await getOrCreateImapClient(userId, cred);
     if (!client) return;
     await client.mailboxOpen("INBOX");
-    
+
     const existsHandler = async () => {
       console.log(`📬 New mail detected for user ${userId} `);
       await fetchAndProcessUnseen(client, userId);
@@ -196,7 +220,7 @@ async function startListening(wait: { userId: number }) {
     console.log(`👂 Started IMAP listener for user ${userId}`);
 
     // Process any emails that arrived while the service was offline.
-    await fetchAndProcessUnseen(client, userId,true);
+    await fetchAndProcessUnseen(client, userId, true);
   } catch (error) {
     console.error(`Failed to start listener for user ${userId}:`, error);
   }
@@ -212,7 +236,7 @@ export async function InitImap() {
         where: { status: "WAITING" },
         distinct: ["userId"],
         select: { userId: true },
-        take: 100,
+        take: 5,
       });
 
       if (waitingUsers.length > 0) {
