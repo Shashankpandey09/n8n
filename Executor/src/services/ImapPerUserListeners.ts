@@ -248,7 +248,7 @@ export async function InitImap() {
 
       // This polling loop is for finding NEW users who need a listener.
       // It will check every 30 seconds.
-      await new Promise((r) => setTimeout(r, 30000));
+      await new Promise((r) => setTimeout(r, 5000));
     } catch (error) {
       console.error("Error in InitImap main loop:", error);
       await new Promise((r) => setTimeout(r, 30000)); // Wait before retrying

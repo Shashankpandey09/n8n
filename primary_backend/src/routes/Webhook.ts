@@ -124,6 +124,8 @@ WebhookRouter.all(
             executionId: Exec.id,
             status: "SUCCESS",
             attempts: 0,
+            startedAt:new Date(),
+            finishedAt:new Date()
           },
         });
         await ctx.outbox.create({
@@ -208,6 +210,7 @@ WebhookRouter.all(
             attempts: 0,
             output: payload,
             startedAt: new Date(),
+            finishedAt:new Date()
           },
         });
       });

@@ -112,8 +112,8 @@ model ExecutionTask {
   input       Json?
   output      Json?
   error       String?
-  startedAt   DateTime?
-  finishedAt  DateTime?
+  startedAt   DateTime
+  finishedAt  DateTime
 
   @@index([executionId, nodeId])
   @@index([status])

@@ -175,6 +175,8 @@ export async function Init() {
                  parent_node_Output === null
                   ? Prisma.JsonNull
                   : parent_node_Output,
+                  startedAt:new Date(),
+                  finishedAt:new Date()
             },
           });
         } catch (e: any) {
@@ -311,7 +313,7 @@ export async function Init() {
               attempts: { increment: 1 },
             },
           });
-          // don't commit the offset if you want the message reprocessed later,
+         
           // but here we commit to avoid blocking pipeline; consider your retry strategy.
           await consumer.commitOffsets([
             {

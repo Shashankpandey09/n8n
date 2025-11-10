@@ -27,4 +27,7 @@ export class CredManager {
     }
 
   }
+  public clearTransportCache(userID:number){
+    this.transporterCache.delete(userID)
+  }
 }

@@ -301,6 +301,10 @@ const WorkflowEditor = () => {
               console.log("node updated via inspector:", updatedNode);
             }}
             workflowId={workflowId}
+            workflowTitle={workflowTitle}
+            edges={edges}
+            savedCredentials={savedCredentials}
+            Nodes={nodes}
           />
         )}
 

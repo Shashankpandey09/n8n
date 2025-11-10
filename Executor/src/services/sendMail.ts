@@ -87,6 +87,7 @@ export async function sendEmail(
         return {success:true,status:"SUCCESS",data:mailOptions};
     } catch (error) {
         console.error("Error sending email:", error);
+        CredManager.getInstance().clearTransportCache(userID)
         return {success:false,status:"FAILED",data:error};
     }
 }
