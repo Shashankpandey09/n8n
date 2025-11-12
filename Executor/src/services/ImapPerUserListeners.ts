@@ -52,16 +52,19 @@ async function processMailAndResume(
     );
 
     // Update the EmailWait status using its unique ID to prevent reprocessing.
-
+   
     const message = parseEmailReply(parsed.text);
-    const resumePayload = {
+    
+    const resumePayload = waitEntry.IsTest?{
       workflowId: waitEntry.workflowId,
       executionId: waitEntry.executionId,
-      ExecutionPayload: JSON.stringify({
-        message,
-      }),
-    };
-
+      targetNodeId:waitEntry.nodeId,
+      isTest:true
+    }:{  workflowId: waitEntry.workflowId,
+      executionId: waitEntry.executionId,
+      isTest:false
+    }
+     
     await prisma.$transaction(async (ctx) => {
       await ctx.emailWait.update({
         where: { id: waitEntry.id },
@@ -75,6 +78,9 @@ async function processMailAndResume(
         select: {
           id: true,
         },
+        orderBy:{
+          startedAt:'desc'
+        }
       });
       await ctx.executionTask.update({
         where: {

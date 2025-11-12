@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shashankpandey/prisma": "^1.2.3",
+    "@shashankpandey/prisma": "^1.2.5",
     "@types/kafkajs": "^1.8.2",
     "dotenv": "^17.2.2",
     "kafkajs": "^2.2.4"

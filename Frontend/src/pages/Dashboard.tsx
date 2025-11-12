@@ -94,6 +94,7 @@ const Dashboard = () => {
         const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
     const updated = allWorkflows.filter((w: any) => w.id !== id);
     localStorage.setItem("workflows", JSON.stringify(updated));
+    localStorage.removeItem("validPayload");
     setWorkflows(workflows.filter((w) => w.id !== id));
     toast.success("Workflow deleted");
     }

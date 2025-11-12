@@ -100,6 +100,7 @@ export const OutputPanel: React.FC<{ nodeId?: string }> = ({ nodeId }) => {
   );
 };
 
+
 export const LeftPanel = ({
   nodeDefinition,
   nodeId,
@@ -107,7 +108,7 @@ export const LeftPanel = ({
 }: {
   nodeDefinition: any;
   nodeId: string;
-  connections:{source:string,target:string}[]
+  connections: { source: string; target: string }[];
 }) => {
   const listening = useWebhook((s) => s.listening);
   const setListening = useWebhook((s) => s.setListening);
@@ -115,52 +116,58 @@ export const LeftPanel = ({
   const deleteTestData = useWebhook((s) => s.deleteTestData);
   const nodeMap = useWebhook((s) => s.NodePayload);
   const inspectorIn = useWebhook((s) => s.inputPayload);
-  const propogateParentOutput=useWebhook((s)=>s.propagateAndMergeParents)
- 
+  const propogateParentOutput = useWebhook((s) => s.propagateAndMergeParents);
+
   const [busy, setBusy] = useState(false);
   const [rawView, setRawView] = useState(false);
-  const [expanded, setExpanded] = useState<Set<string>>(() => new Set(["input"]));
+  const [expanded, setExpanded] = useState<Set<string>>(
+    () => new Set(["input"])
+  );
+
   useEffect(() => {
     let intervalId: NodeJS.Timeout | null = null;
     let timeoutId: NodeJS.Timeout | null = null;
 
-    if (listening && nodeDefinition?.type === "webhook") {
-      // Poll every 4 seconds
-      intervalId = setInterval(() => {
-        fetchNode(nodeId, nodeDefinition.type).catch((err) => {
+    if (listening) {
+      // Poll every 2 seconds and await before propagate
+      intervalId = setInterval(async () => {
+        try {
+          await fetchNode(nodeId, nodeDefinition.type);
+          propogateParentOutput(connections, nodeId);
+        } catch (err) {
           console.error("poll fetchNode error:", err);
           toast.error("Failed to fetch latest webhook data");
-        });
-      }, 4000);
+        }
+      }, 2000);
 
       // Stop after 60 seconds
       timeoutId = setTimeout(() => {
         toast.info("Stopped listening");
         if (intervalId) clearInterval(intervalId);
-        setListening(listening); // toggle off
-      }, 60000);
+        setListening(true); // explicitly stop
+      }, 1200000);
     }
 
     return () => {
       if (intervalId) clearInterval(intervalId);
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [listening, fetchNode, nodeId, nodeDefinition?.type, setListening]);
-useEffect(()=>{
-const fetch=async()=>{
-  await fetchNode(nodeId,nodeDefinition.type)
-  propogateParentOutput(connections,nodeId)
-}
-fetch()
-},[])
+  }, [listening, fetchNode, nodeId, nodeDefinition?.type, setListening, propogateParentOutput, connections]);
+
+  useEffect(() => {
+    (async () => {
+      await fetchNode(nodeId, nodeDefinition.type);
+      propogateParentOutput(connections, nodeId);
+    })();
+    // run when node id/type or connections change
+  }, []);
 
   const nodeEntry = useMemo(
     () => (nodeId ? nodeMap.get(nodeId) ?? null : null),
     [nodeMap, nodeId]
-  ); 
-  console.log('node map----> ',nodeEntry)
+  );
+
   const inPayload = nodeEntry?.input ?? inspectorIn ?? null;
-  console.log("input payload",inPayload)
 
   const toggle = useCallback((path: string) => {
     setExpanded((prev) => {
@@ -173,18 +180,13 @@ fetch()
 
   const copyJson = useCallback(async (payload: any) => {
     try {
-      await navigator.clipboard.writeText(
-        JSON.stringify(payload ?? {}, null, 2)
-      );
+      await navigator.clipboard.writeText(JSON.stringify(payload ?? {}, null, 2));
       toast("Copied input JSON to clipboard");
     } catch (err) {
       console.error("copy failed", err);
       toast.error("Failed to copy");
     }
   }, []);
-
-  // Webhook listening with polling (keeps your exact logic)
- 
 
   const handleListen = async () => {
     if (nodeDefinition?.type !== "webhook") {
@@ -197,7 +199,7 @@ fetch()
     try {
       await deleteTestData(nodeId);
       toast.success("Cleared previous test data");
-      setListening(listening); // toggle
+      setListening(listening); 
       if (!listening) toast("Listening for test event…");
       else toast("Stopped listening.");
     } catch (err: any) {
@@ -214,9 +216,9 @@ fetch()
   };
 
   const asideClass =
-    "p-4 border-r border-border h-full bg-surface w-[360px] max-w-full flex-shrink-0";
+    "p-4 border-r border-border h-full bg-surface w-[360px] max-w-full flex-shrink-0 flex flex-col";
 
-  // Webhook left panel (unchanged behavior)
+  // Webhook left panel
   if (nodeDefinition?.type === "webhook") {
     return (
       <aside className={asideClass}>
@@ -233,9 +235,7 @@ fetch()
               onClick={handleListen}
               disabled={busy}
               variant={listening ? "secondary" : "destructive"}
-              className={`w-full relative overflow-hidden transition-all ${
-                listening ? "animate-pulse" : ""
-              }`}
+              className={`w-full relative overflow-hidden transition-all ${listening ? "animate-pulse" : ""}`}
             >
               {busy ? (
                 <div className="flex items-center gap-2">
@@ -282,11 +282,11 @@ fetch()
         )}
       </div>
 
-      <div className="rounded-md border border-dashed border-input p-4 text-sm text-muted-foreground">
+      <div className="rounded-md border border-dashed border-input p-2 text-sm  bg-white flex-1 overflow-auto">
         {inPayload ? (
           rawView ? (
             <div className="w-full overflow-x-auto">
-              <pre className="whitespace-pre text-sm font-mono px-2 py-2 min-w-[480px] bg-white rounded border">
+              <pre className="whitespace-pre text-sm font-mono px-2 py-2 min-w-[480px]">
                 {JSON.stringify(inPayload, null, 2)}
               </pre>
             </div>

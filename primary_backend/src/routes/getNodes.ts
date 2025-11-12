@@ -18,14 +18,16 @@ NodeRouter.get("/get", Authenticate, async (req: Request, res: Response) => {
     const node = await prisma.executionTask.findFirst({
       where: {
         nodeId: nodeData,
-        startedAt: {
-          lt: new Date(),
-        },
+        
+      },
+      orderBy:{
+        finishedAt:'desc'
       },
       select: {
         input: true,
         output: true,
         error: true,
+        status:true
       },
     });
 

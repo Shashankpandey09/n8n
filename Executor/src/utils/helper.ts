@@ -10,7 +10,7 @@ export type NodeOutput = {
 export class ExecutionHelper {
   private static instance: ExecutionHelper | null = null;
 
-  private previousNodesOutput: NodeOutput[] | null = null;
+  private previousNodesOutput: NodeOutput[]  = [];
 
   private constructor() {}
 
@@ -40,19 +40,37 @@ export class ExecutionHelper {
     return this.previousNodesOutput;
   }
 
-  public getParentNodeOutput(parentNodeId: string|null): JsonValue | null {
-    if (!this.previousNodesOutput) return null;
-
+  public async getParentNodeOutput(parentNodeId: string|null): Promise<JsonValue | null> {
+    console.log('reached')
+    if (!parentNodeId && (this.previousNodesOutput.length==0)) return null;
+    
     const found = this.previousNodesOutput.find(
       (n) => String(n.nodeId) === String(parentNodeId)
     );
+    console.log('parentID----->',parentNodeId)
+    if(!found&&parentNodeId){
+      //doing a db query
+      const parentOutput=await prisma.executionTask.findFirst({
+        where:{
+          nodeId:parentNodeId,
+ 
+        },
+        select:{
+          output:true
+        },
+        orderBy:{
+          finishedAt:'desc'
+        }
+      })
+      return parentOutput?.output??null
+    }
     console.log('found')
     console.log(found)
     return found?.output ?? null;
   }
 
   public clearCache() {
-    this.previousNodesOutput = null;
+    this.previousNodesOutput = [];
    
   }
 }

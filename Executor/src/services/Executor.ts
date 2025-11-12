@@ -75,7 +75,7 @@ export async function Init() {
           ]);
           return;
         }
-
+        const targetNodeId = payload.targetNodeId ?? payload.targetId ?? null;
         // load previous tasks for this execution (so we know which nodes already ran)
         const prevTaskNodes = await executionHelper.getPreviousExecutionTasks(
           payload.executionId
@@ -86,7 +86,7 @@ export async function Init() {
         const doneNodeIds = new Set(prevTaskNodes.map((p) => String(p.nodeId)));
 
         // Read target node id from top-level message (not from stringified ExecutionPayload)
-        const targetNodeId = payload.targetNodeId ?? payload.targetId ?? null;
+     
 
         // - If targetNodeId is provided -> run that node (even if it's not in remainingNodes for this execution)
         // - Else -> pick the first node that hasn't run yet (full-run)
@@ -161,9 +161,10 @@ export async function Init() {
         );
         //parentNode can be null which states this is a single node execution
         //if parent node exists then it's previous execution must have exist so get it from the prevtasks
-        const parent_node_Output = executionHelper.getParentNodeOutput(
+        const parent_node_Output = await executionHelper.getParentNodeOutput(
           parentNodeId!
         );
+        console.log('parent_node_output---->',parent_node_Output)
         try {
           task = await prisma.executionTask.create({
             data: {
@@ -270,7 +271,8 @@ export async function Init() {
                   Number(payload.workflowId),
                   payload.executionId,
                   nodeToExecute.id,
-                  subject
+                  subject,
+                  payload.isTest
                 );
               }
               break;

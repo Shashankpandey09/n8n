@@ -124,6 +124,8 @@ WebhookRouter.all(
             executionId: Exec.id,
             status: "SUCCESS",
             attempts: 0,
+            input:payload,
+            output:payload,
             startedAt:new Date(),
             finishedAt:new Date()
           },
@@ -206,7 +208,7 @@ WebhookRouter.all(
           data: {
             nodeId: nodeID,
             executionId: Exec.id,
-            status: "RUNNING",
+            status: "SUCCESS",
             attempts: 0,
             output: payload,
             startedAt: new Date(),

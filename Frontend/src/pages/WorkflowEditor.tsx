@@ -33,13 +33,13 @@ const WorkflowEditor = () => {
   const path = useWebhook((s) => s.WebhookUrl);
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
-
+  
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
 
   const [workflowTitle, setWorkflowTitle] = useState("New Workflow");
   const savedCredentials = useCredStore((s) => s.credentialsMetaData);
-
+ const {setListening,setPolling}=useWebhook((s)=>s)
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
     const workflow = allWorkflows.find((w: any) => w.id === Number(workflowId));
@@ -211,10 +211,11 @@ const WorkflowEditor = () => {
                     return;
                   }
                   const payload = JSON.parse(raw);
-                  console.log(path);
+                  const triggerId=payload?.nodes[0]?.id
+                  const triggerPayload=useWebhook.getState().NodePayload.get(triggerId).output
                   const res = await axios.post(
                     `http://localhost:3000/api/v1/webhook/handle/${path}`,
-                    payload,
+                    triggerPayload,
                     {
                       headers: {
                         "Content-Type": "application/json",
@@ -292,7 +293,10 @@ const WorkflowEditor = () => {
         {selectedNode && (
           <NodeInspector
             node={selectedNode}
-            onClose={() => setSelectedNode(null)}
+            onClose={() => {setSelectedNode(null)
+              setListening(true);
+              setPolling(false)
+            }}
             onUpdate={(updatedNode) => {
               setNodes((nds) =>
                 nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))

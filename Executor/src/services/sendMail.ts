@@ -45,6 +45,7 @@ export async function sendEmail(
     executionId: number,
     nodeId: string,
     subject:string,
+    isTest:boolean
    
 ) {
     try {
@@ -75,6 +76,7 @@ export async function sendEmail(
                         nodeId: nodeId,
                         userId: userID,
                         status: "WAITING",
+                        IsTest:isTest?true:false
                     },
                 });
                 console.log(`Created EmailWait entry, now waiting for a reply to: ${sentMessageId}`);

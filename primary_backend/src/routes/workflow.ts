@@ -163,7 +163,7 @@ WorkFlowRouter.delete(
       }
 
       // ensure the workflow belongs to the user
-      const existing = await prisma.workflow.findUnique({
+      const existing = await prisma.workflow.findFirst({
         where: { id: workflowId, userId },
         select: { id: true, title: true },
       });
@@ -174,14 +174,14 @@ WorkFlowRouter.delete(
           .json({ ok: false, message: "Workflow not found or not accessible" });
       }
        await prisma.$transaction(async(ctx)=>{
-        await ctx.webhook.delete({
-          where:{
-            workflowId:workflowId
-          }
-        })
-       await ctx.workflow.delete({
+      await ctx.workflow.delete({
         where: { id: workflowId },
       });
+      await ctx.emailWait.deleteMany({
+        where:{
+          workflowId:workflowId
+        }
+      })
        })
      
 

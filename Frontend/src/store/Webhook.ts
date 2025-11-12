@@ -15,7 +15,8 @@ type Webhook = {
   outPayload: any;
   NodePayload: Map<string, NodeIO>;
   listening: boolean;
-
+  polling: boolean;
+  setPolling: (polling: boolean) => void;
   getWebhookUrl: (workflowId: number) => Promise<void>;
   setListening: (listening: boolean) => void;
   fetchNode: (NodeId: string, type: string) => Promise<void>;
@@ -32,7 +33,11 @@ export const useWebhook = create<Webhook>((set) => ({
   outPayload: null,
   inputPayload: null,
   NodePayload: new Map(),
+  polling:false,
 
+ setPolling: (polling: boolean) => {
+    set({ polling });
+  },
   getWebhookUrl: async (workflowId: number) => {
     try {
       const res = await axios.get(
@@ -54,8 +59,7 @@ export const useWebhook = create<Webhook>((set) => ({
   fetchNode: async (NodeId: string, type: string) => {
     if (!NodeId) return;
 
-    if ((window as any).__isFetchingNode) return;
-    (window as any).__isFetchingNode = true;
+  
 
     try {
       const token = localStorage.getItem("token");
@@ -71,6 +75,7 @@ export const useWebhook = create<Webhook>((set) => ({
           input: Record<string, any> | null;
           output: Record<string, any> | null;
           error?: string;
+          status?:string
         };
         message: string;
       }>(url, {
@@ -84,15 +89,15 @@ export const useWebhook = create<Webhook>((set) => ({
 
       const prevMap = useWebhook.getState().NodePayload ?? new Map<string, NodeIO>();
       const nextMap = new Map(prevMap);
-
+   
       if (type === "webhook") {
         // treat webhook payload as output for this node
         const webhookOutput = data.output ?? data.input ?? null;
         console.log(webhookOutput)
         
         // Keep listening if no data received yet
-        const shouldKeepListening = !data.input && !data.output;
-        
+      
+        const shouldKeepListening = !data.input && !data.output&& useWebhook.getState().listening;
         nextMap.set(NodeId, {
           input: data.input ?? null,
           output: webhookOutput,
@@ -113,13 +118,12 @@ export const useWebhook = create<Webhook>((set) => ({
           NodePayload: nextMap,
           inputPayload: data.input ?? null,
           outPayload: data.output ?? null,
+         listening:data.status=='RUNNING' 
         });
       }
     } catch (error) {
       console.error("Error fetching node data:", error);
       set({ inputPayload: null, outPayload: null, listening: false });
-    } finally {
-      (window as any).__isFetchingNode = false;
     }
   },
 
@@ -151,7 +155,7 @@ export const useWebhook = create<Webhook>((set) => ({
           },
         }
       );
-      set({ success: true });
+      set({success: true ,listening:true});
       console.log(res.data);
     } catch (error) {
       console.log("error during executing the node ");
@@ -178,7 +182,6 @@ export const useWebhook = create<Webhook>((set) => ({
       set({
         inputPayload: null,
         outPayload: null,
-        listening: false,
         success: true,
       });
     } catch (error) {
@@ -210,12 +213,12 @@ export const useWebhook = create<Webhook>((set) => ({
       .map((pid) => nodeMap.get(pid)?.output || null)
       .filter((o): o is Record<string, any> => o !== null);
 
-    const merged = outputs.length ? Object.assign({}, ...outputs) : null;
+    const merged:Record<string,any>|null = outputs.length ? Object.assign({}, ...outputs) : null;
     console.log("merge parent",merged)
 
     const next = new Map(nodeMap);
     const prevChild = nodeMap.get(childId);
-    next.set(childId, { input: merged, output: prevChild?.output ?? null });
+    next.set(childId, { input: merged??prevChild.input, output: prevChild?.output ?? null });
 
     set({
       NodePayload: next,
