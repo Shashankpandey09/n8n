@@ -10,13 +10,12 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils"; // optional classname helper in many shadcn setups
+import { cn } from "@/lib/utils";
 import { Eye, EyeOff, Loader2 } from "lucide-react";
 import axios from "axios";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
 
-// Updated: wider layout, stable inputs (no layout shift), black & white theme with teal accent
 export default function Auth() {
   const [isSignIn, setIsSignIn] = useState(true);
   const [email, setEmail] = useState("");
@@ -64,71 +63,125 @@ export default function Auth() {
   };
 
   return (
-    // Page background is black, card is white for high contrast. Accent color: teal
-    <div className="min-h-screen flex items-center justify-center px-6 py-12">
-      <motion.div
-        initial={{ opacity: 0, y: 8 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.32 }}
-        className="w-full max-w-3xl"
-      >
-        <Card className="overflow-hidden rounded-2xl shadow-2xl bg-white text-black">
-          <div className="grid grid-cols-1 md:grid-cols-2">
-            {/* Left: Illustration / brand - dark panel to contrast with white card */}
-            <div className="hidden md:flex flex-col items-center justify-center gap-4 bg-black/85 backdrop-blur-md border border-white/10 text-white p-10 rounded-2xl shadow-lg">
-              <h2 className="text-2xl font-extrabold">
-                {isSignIn ? "Welcome back" : "Welcome"}
-              </h2>
-              <p className="text-sm opacity-90 max-w-[260px] text-center">
-                {isSignIn
-                  ? "Sign in to continue to your dashboard"
-                  : "Create an account to get started"}
-              </p>
+    <div className="min-h-screen bg-[#050b11] text-[#e6eef6] flex items-center justify-center px-4 py-10 relative overflow-hidden">
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-40 -left-32 h-64 w-64 rounded-full bg-[#1d4ed8]/10 blur-3xl" />
+        <div className="absolute -bottom-40 -right-10 h-72 w-72 rounded-full bg-[#0ea5e9]/10 blur-3xl" />
+        <div className="absolute inset-0 opacity-20 bg-[radial-gradient(circle_at_top,_#111827_0,_#020617_55%,_#020617_100%)]" />
+      </div>
 
-              <div className="w-36 h-36 rounded-lg bg-white/5 flex items-center justify-center">
-                {/* subtle brand mark in teal */}
+      <motion.div
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className="relative w-full max-w-4xl"
+      >
+        <Card className="bg-[#050b11]/90 border border-[#1f2933] rounded-2xl shadow-[0_0_0_1px_rgba(15,23,42,0.8),0_28px_80px_rgba(0,0,0,0.75)] overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-[1.1fr_1.1fr]">
+        
+            <div className="hidden md:flex flex-col justify-between bg-gradient-to-br from-[#020617] via-[#020617] to-[#020617] border-r border-[#1f2933] px-8 py-8 relative">
+         
+              <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                  <div className="h-7 w-7 rounded-lg bg-[#1e293b] flex items-center justify-center">
+                    <span className="h-3 w-3 rounded-full bg-[#22c55e]" />
+                  </div>
+                  <span className="text-sm font-medium tracking-tight text-[#e5e7eb]">
+                    Flowboard
+                  </span>
+                </div>
+                <span className="text-[11px] uppercase tracking-[0.18em] text-[#6b7280]">
+                  Auth
+                </span>
+              </div>
+
+
+              <div className="space-y-3">
+                <h2 className="text-2xl font-semibold leading-tight">
+                  {isSignIn ? "Welcome back" : "Create your workspace"}
+                </h2>
+                <p className="text-xs text-[#9ca3af] max-w-xs">
+                  {isSignIn
+                    ? "Log in to keep building and running your workflows in the same clean midnight canvas."
+                    : "Spin up an account and start wiring your APIs together in minutes."}
+                </p>
+              </div>
+
+    
+              <div className="mt-8 rounded-xl border border-[#1f2933] bg-[#020617] px-5 py-4">
+                <div className="flex items-center justify-between text-[11px] text-[#9ca3af] mb-3">
+                  <span>Today&apos;s flow</span>
+                  <span className="text-[#60a5fa]">Status · Ready</span>
+                </div>
                 <svg
-                  width="56"
-                  height="56"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  aria-hidden
+                  viewBox="0 0 260 60"
+                  className="w-full h-16 text-[#1d4ed8]"
                 >
+                  <defs>
+                    <linearGradient
+                      id="flowLine"
+                      x1="0"
+                      y1="0"
+                      x2="1"
+                      y2="0"
+                    >
+                      <stop offset="0%" stopColor="#22c55e" />
+                      <stop offset="50%" stopColor="#38bdf8" />
+                      <stop offset="100%" stopColor="#6366f1" />
+                    </linearGradient>
+                  </defs>
                   <path
-                    d="M3 12h18"
-                    stroke="#14B8A6"
-                    strokeWidth="1.5"
+                    d="M10 30 C60 5, 120 55, 180 25 S250 40, 250 30"
+                    fill="none"
+                    stroke="url(#flowLine)"
+                    strokeWidth="2"
                     strokeLinecap="round"
                     strokeLinejoin="round"
+                    opacity="0.9"
                   />
-                  <path
-                    d="M12 3v18"
-                    stroke="#14B8A6"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
+                  {[10, 95, 180, 250].map((x, idx) => (
+                    <g key={x}>
+                      <circle
+                        cx={x}
+                        cy={idx === 1 ? 20 : idx === 2 ? 40 : 30}
+                        r={5}
+                        fill="#020617"
+                        stroke="#1d4ed8"
+                        strokeWidth="1.5"
+                      />
+                      <circle
+                        cx={x}
+                        cy={idx === 1 ? 20 : idx === 2 ? 40 : 30}
+                        r={2}
+                        fill="#e5e7eb"
+                      />
+                    </g>
+                  ))}
                 </svg>
               </div>
             </div>
 
-            {/* Right: Form */}
-            <CardContent className="p-8 md:p-10">
-              <CardHeader className="p-0 mb-4">
-                <CardTitle className="text-2xl font-bold">
+        
+            <CardContent className="px-6 py-7 md:px-8 md:py-9 bg-[#020617]/90">
+              <CardHeader className="p-0 mb-5">
+                <CardTitle className="text-xl font-semibold text-[#e5e7eb]">
                   {isSignIn ? "Sign in" : "Create account"}
                 </CardTitle>
-                <CardDescription className="text-sm text-muted-foreground">
+                <CardDescription className="mt-1 text-xs text-[#9ca3af]">
                   {isSignIn
-                    ? "Enter your credentials to continue"
-                    : "Choose a secure password"}
+                    ? "Use your credentials to access the dashboard."
+                    : "Set up a login so you can return to your flows later."}
                 </CardDescription>
               </CardHeader>
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="">
-                  <Label htmlFor="email">Email</Label>
-                  {/* Stable input: same border/height on focus to avoid layout shift */}
+                <div>
+                  <Label
+                    htmlFor="email"
+                    className="text-[11px] uppercase tracking-[0.13em] text-[#9ca3af]"
+                  >
+                    Email
+                  </Label>
                   <Input
                     id="email"
                     type="email"
@@ -137,12 +190,17 @@ export default function Auth() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     aria-label="Email"
-                    className="mt-1  w-full box-border h-11 border border-neutral-200 rounded-md px-3 py-2 placeholder:opacity-60 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    className="mt-1 w-full h-10 text-white bg-[#020617] border border-[#1f2933] rounded-md px-3 text-sm placeholder:text-[#4b5563] focus-visible:ring-1 focus-visible:ring-[#38bdf8] focus-visible:border-[#38bdf8]"
                   />
                 </div>
 
-                <div className="relative ">
-                  <Label htmlFor="password">Password</Label>
+                <div className="relative">
+                  <Label
+                    htmlFor="password"
+                    className="text-[11px] uppercase tracking-[0.13em] text-[#9ca3af]"
+                  >
+                    Password
+                  </Label>
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
@@ -151,16 +209,14 @@ export default function Auth() {
                     onChange={(e) => setPassword(e.target.value)}
                     required
                     aria-label="Password"
-                    className="mt-1 w-full box-border  h-11 border border-neutral-200 rounded-md pr-12 px-3 py-2 placeholder:opacity-60 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                    className="mt-1 w-full h-10 text-white bg-[#020617] border border-[#1f2933] rounded-md pr-11 px-3 text-sm placeholder:text-[#4b5563] focus-visible:ring-1 focus-visible:ring-[#38bdf8] focus-visible:border-[#38bdf8]"
                   />
 
                   <button
                     type="button"
                     onClick={() => setShowPassword((s) => !s)}
-                    aria-label={
-                      showPassword ? "Hide password" : "Show password"
-                    }
-                    className="absolute right-2 top-1/2  inline-flex items-center justify-center rounded px-2 py-1 text-sm text-neutral-600 hover:bg-neutral-100"
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    className="absolute right-2 top-[26px] inline-flex items-center justify-center rounded-md px-2 py-1 text-xs text-[#9ca3af] hover:bg-[#020617] hover:text-[#e5e7eb]"
                   >
                     {showPassword ? (
                       <EyeOff className="h-4 w-4" />
@@ -170,41 +226,37 @@ export default function Auth() {
                   </button>
                 </div>
 
-                {/* lightweight password hint / strength indicator */}
-
-                <div className="text-xs text-neutral-600">
-                  Tip: Use at least 8 characters — mix letters and numbers.
+                <div className="text-[11px] text-[#6b7280]">
+                  Tip: use at least 8 characters and mix letters, numbers, and
+                  symbols.
                 </div>
 
-                <div className="flex flex-col gap-3">
-                  {/* Primary button uses teal accent */}
+                <div className="flex flex-col gap-3 mt-2">
                   <Button
                     type="submit"
                     disabled={loading}
                     className={cn(
-                      "w-full h-11 flex items-center justify-center rounded-md font-semibold",
+                      "w-full h-10 rounded-md text-sm font-medium shadow-sm transition",
                       loading
-                        ? "opacity-70 cursor-not-allowed"
-                        : "bg-teal-500 hover:bg-teal-600 text-white"
+                        ? "opacity-70 cursor-not-allowed bg-[#1d4ed8]"
+                        : "bg-[#2563eb] hover:bg-[#1d4ed8] text-white"
                     )}
                   >
                     {loading ? (
-                      <div className="inline-flex items-center gap-2">
+                      <span className="inline-flex items-center gap-2">
                         <Loader2 className="h-4 w-4 animate-spin" />
-                        <span>
-                          {isSignIn ? "Signing in..." : "Signing up..."}
-                        </span>
-                      </div>
+                        {isSignIn ? "Signing in…" : "Signing up…"}
+                      </span>
                     ) : (
-                      <span>{isSignIn ? "Sign In" : "Create Account"}</span>
+                      <span>{isSignIn ? "Sign in" : "Create account"}</span>
                     )}
                   </Button>
 
-                  <div className="flex items-center justify-between text-sm">
+                  <div className="flex items-center justify-between text-xs text-[#9ca3af]">
                     <button
                       type="button"
                       onClick={toggleMode}
-                      className="text-sm text-neutral-800 hover:underline"
+                      className="hover:text-[#e5e7eb] hover:underline underline-offset-4"
                       aria-pressed={!isSignIn}
                     >
                       {isSignIn
@@ -214,36 +266,15 @@ export default function Auth() {
 
                     <button
                       type="button"
-                      onClick={() => toast("Passwordless reset coming soon")}
-                      className="text-sm text-neutral-600 hover:underline"
+                      onClick={() =>
+                        toast("Password reset / magic link coming soon")
+                      }
+                      className="hover:text-[#e5e7eb] hover:underline underline-offset-4"
                     >
                       Forgot?
                     </button>
                   </div>
                 </div>
-
-                {/* small footer with subtle seperator */}
-                {/* <div className="mt-4 border-t pt-4 text-center text-sm text-neutral-600">
-                  <span>Or continue with</span>
-                  <div className="mt-3 flex items-center justify-center gap-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toast("Sign in with Google — stub")}
-                      className="h-9"
-                    >
-                      Google
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => toast("Sign in with GitHub — stub")}
-                      className="h-9"
-                    >
-                      GitHub
-                    </Button>
-                  </div>
-                </div> */}
               </form>
             </CardContent>
           </div>

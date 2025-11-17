@@ -1,4 +1,3 @@
-// panels.tsx
 import { Button } from "./button";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Loader2 } from "lucide-react";
@@ -46,21 +45,21 @@ export const OutputPanel: React.FC<{ nodeId?: string }> = ({ nodeId }) => {
   }, []);
 
   return (
-    <aside className="p-4 border-l border-border h-full bg-surface w-[640px] max-w-full flex-shrink-0">
+    <aside className="p-4 border-l border-[#1f2933] h-full bg-[#0b1017] w-full flex-shrink-0 flex flex-col text-[#e6eef6]">
       <div className="flex items-start justify-between mb-3">
         <h3 className="text-sm font-medium">Output</h3>
 
         <div className="flex items-center gap-2">
           <button
             onClick={() => copyJson(outPayload ?? {})}
-            className="text-xs px-2 py-1 rounded-md border"
+            className="text-xs px-2 py-1 rounded-md border border-[#1f2933] bg-[#111827] hover:bg-[#1b2430]"
             title="Copy JSON"
           >
             Copy
           </button>
           <button
             onClick={() => setRawView((s) => !s)}
-            className="text-xs px-2 py-1 rounded-md border"
+            className="text-xs px-2 py-1 rounded-md border border-[#1f2933] bg-[#111827] hover:bg-[#1b2430]"
             title="Toggle raw view"
           >
             {rawView ? "Tree" : "Raw"}
@@ -68,11 +67,11 @@ export const OutputPanel: React.FC<{ nodeId?: string }> = ({ nodeId }) => {
         </div>
       </div>
 
-      <div className="rounded-md border border-dashed border-input p-2 h-full overflow-auto bg-white">
+      <div className="rounded-md border border-dashed border-[#1f2933] p-2 h-full overflow-auto bg-[#050b11]">
         {rootJson ? (
           rawView ? (
             <div className="w-full overflow-x-auto">
-              <pre className="whitespace-pre text-sm font-mono px-4 py-2 min-w-[900px]">
+              <pre className="whitespace-pre text-sm font-mono px-4 py-2 min-w-[900px] text-[#e6eef6]">
                 {JSON.stringify(rootJson, null, 2)}
               </pre>
             </div>
@@ -91,7 +90,7 @@ export const OutputPanel: React.FC<{ nodeId?: string }> = ({ nodeId }) => {
             </div>
           )
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-center text-sm text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-full text-center text-sm text-[#9aa3ad]">
             <p className="mb-2">Execute this node to view data</p>
           </div>
         )}
@@ -100,11 +99,10 @@ export const OutputPanel: React.FC<{ nodeId?: string }> = ({ nodeId }) => {
   );
 };
 
-
 export const LeftPanel = ({
   nodeDefinition,
   nodeId,
-  connections
+  connections,
 }: {
   nodeDefinition: any;
   nodeId: string;
@@ -129,7 +127,6 @@ export const LeftPanel = ({
     let timeoutId: NodeJS.Timeout | null = null;
 
     if (listening) {
-      // Poll every 2 seconds and await before propagate
       intervalId = setInterval(async () => {
         try {
           await fetchNode(nodeId, nodeDefinition.type);
@@ -140,11 +137,10 @@ export const LeftPanel = ({
         }
       }, 2000);
 
-      // Stop after 60 seconds
       timeoutId = setTimeout(() => {
         toast.info("Stopped listening");
         if (intervalId) clearInterval(intervalId);
-        setListening(true); // explicitly stop
+        setListening(true);
       }, 1200000);
     }
 
@@ -152,15 +148,22 @@ export const LeftPanel = ({
       if (intervalId) clearInterval(intervalId);
       if (timeoutId) clearTimeout(timeoutId);
     };
-  }, [listening, fetchNode, nodeId, nodeDefinition?.type, setListening, propogateParentOutput, connections]);
+  }, [
+    listening,
+    fetchNode,
+    nodeId,
+    nodeDefinition?.type,
+    setListening,
+    propogateParentOutput,
+    connections,
+  ]);
 
   useEffect(() => {
     (async () => {
       await fetchNode(nodeId, nodeDefinition.type);
       propogateParentOutput(connections, nodeId);
     })();
-    // run when node id/type or connections change
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const nodeEntry = useMemo(
     () => (nodeId ? nodeMap.get(nodeId) ?? null : null),
@@ -199,7 +202,7 @@ export const LeftPanel = ({
     try {
       await deleteTestData(nodeId);
       toast.success("Cleared previous test data");
-      setListening(listening); 
+      setListening(listening);
       if (!listening) toast("Listening for test event…");
       else toast("Stopped listening.");
     } catch (err: any) {
@@ -216,16 +219,15 @@ export const LeftPanel = ({
   };
 
   const asideClass =
-    "p-4 border-r border-border h-full bg-surface w-[360px] max-w-full flex-shrink-0 flex flex-col";
+    "p-4 border-r border-[#1f2933] h-full bg-[#0b1017] w-full max-w-full flex-shrink-0 flex flex-col text-[#e6eef6]";
 
-  // Webhook left panel
   if (nodeDefinition?.type === "webhook") {
     return (
       <aside className={asideClass}>
         <h3 className="text-sm font-medium mb-3">Pull in events from Webhook</h3>
 
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="space-y-4 text-sm text-[#9aa3ad]">
+          <p>
             Once you've finished building your workflow, run it without clicking
             this button by using the production webhook URL.
           </p>
@@ -235,7 +237,9 @@ export const LeftPanel = ({
               onClick={handleListen}
               disabled={busy}
               variant={listening ? "secondary" : "destructive"}
-              className={`w-full relative overflow-hidden transition-all ${listening ? "animate-pulse" : ""}`}
+              className={`w-full relative overflow-hidden transition-all ${
+                listening ? "animate-pulse" : ""
+              }`}
             >
               {busy ? (
                 <div className="flex items-center gap-2">
@@ -257,7 +261,7 @@ export const LeftPanel = ({
     );
   }
 
-  // Non-webhook: show INPUT nicely (tree or raw, with copy)
+  // Non-webhook
   return (
     <aside className={asideClass}>
       <div className="flex items-start justify-between mb-3">
@@ -266,14 +270,14 @@ export const LeftPanel = ({
           <div className="flex items-center gap-2">
             <button
               onClick={() => copyJson(inPayload)}
-              className="text-xs px-2 py-1 rounded-md border"
+              className="text-xs px-2 py-1 rounded-md border border-[#1f2933] bg-[#111827] hover:bg-[#1b2430]"
               title="Copy input JSON"
             >
               Copy
             </button>
             <button
               onClick={() => setRawView((s) => !s)}
-              className="text-xs px-2 py-1 rounded-md border"
+              className="text-xs px-2 py-1 rounded-md border border-[#1f2933] bg-[#111827] hover:bg-[#1b2430]"
               title="Toggle raw view"
             >
               {rawView ? "Tree" : "Raw"}
@@ -282,11 +286,11 @@ export const LeftPanel = ({
         )}
       </div>
 
-      <div className="rounded-md border border-dashed border-input p-2 text-sm  bg-white flex-1 overflow-auto">
+      <div className="rounded-md border border-dashed border-[#1f2933] text-sm bg-[#050b11] flex-1 overflow-auto p-2">
         {inPayload ? (
           rawView ? (
             <div className="w-full overflow-x-auto">
-              <pre className="whitespace-pre text-sm font-mono px-2 py-2 min-w-[480px]">
+              <pre className="whitespace-pre text-sm font-mono px-2 py-2 min-w-[480px] text-[#e6eef6]">
                 {JSON.stringify(inPayload, null, 2)}
               </pre>
             </div>
@@ -301,7 +305,7 @@ export const LeftPanel = ({
             </div>
           )
         ) : (
-          <p>
+          <p className="text-[#9aa3ad]">
             This node uses inputs from previous nodes. Connect an upstream node
             or provide mock data to test.
           </p>

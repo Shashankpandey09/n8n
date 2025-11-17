@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,6 +11,7 @@ import {
 import { Plus, Play, Trash2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import Navbar from "@/components/ui/Navbar";
 
 interface Workflow {
   id: number;
@@ -68,7 +69,7 @@ const Dashboard = () => {
         }
       );
       const result = res.data;
-      if(!result.ok) return;
+      if (!result.ok) return;
       const allWorkflows = JSON.parse(
         localStorage.getItem("workflows") || "[]"
       );
@@ -78,104 +79,93 @@ const Dashboard = () => {
 
       navigate(`/workflow/${result.workflow.id}`);
     } catch (error) {
-      console.log('error while creating workflow----->',error)
+      console.log("error while creating workflow----->", error);
     }
   };
 
-  const handleDeleteWorkflow = async(id: number) => {
+  const handleDeleteWorkflow = async (id: number) => {
     try {
-     const res= await axios.delete(`http://localhost:3000/api/v1/workflow/delete/${id}`,{
-      headers:{
-        'Content-Type':'application/json',
-        Authorization:`Bearer ${localStorage.getItem('token')}`
+      const res = await axios.delete(
+        `http://localhost:3000/api/v1/workflow/delete/${id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+      if (res.status == 200) {
+        const allWorkflows = JSON.parse(
+          localStorage.getItem("workflows") || "[]"
+        );
+        const updated = allWorkflows.filter((w: any) => w.id !== id);
+        localStorage.setItem("workflows", JSON.stringify(updated));
+        localStorage.removeItem("validPayload");
+        setWorkflows(workflows.filter((w) => w.id !== id));
+        toast.success("Workflow deleted");
       }
-    })
-    if(res.status==200){
-        const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
-    const updated = allWorkflows.filter((w: any) => w.id !== id);
-    localStorage.setItem("workflows", JSON.stringify(updated));
-    localStorage.removeItem("validPayload");
-    setWorkflows(workflows.filter((w) => w.id !== id));
-    toast.success("Workflow deleted");
-    }
     } catch (error) {
-      console.log(error)
-      console.log(error)
-      toast.error('error occurred')
+      console.log(error);
+      console.log(error);
+      toast.error("error occurred");
     }
-
-  };
-
-  const handleLogout = () => {
-    localStorage.removeItem("currentUser");
-    navigate("/");
-    toast.success("Logged out");
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Top nav: subtle frosted bar, minimal */}
-      <header className="sticky top-0 z-20 border-b bg-white/60 backdrop-blur-sm">
-        <div className="mx-auto max-w-6xl px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => navigate("/dashboard")}
-              className="text-lg font-semibold tracking-tight"
-            >
-              Workflow
-            </button>
-
-            <nav className="hidden md:flex items-center gap-4 text-sm text-slate-700">
-             
-              <button onClick={() => navigate("/credential")} className="hover:underline">Credentials</button>
-            </nav>
-          </div>
-
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" onClick={() => navigate("/settings")}>Settings</Button>
-            <Button variant="secondary" onClick={handleLogout}>Logout</Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-[#050b11] text-[#e6eef6]">
+      <Navbar />
 
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-3xl font-bold">Workflows</h2>
-            <p className="text-sm text-slate-500">Build and manage your automation workflows</p>
+            <h2 className="text-2xl font-semibold text-[#e6eef6]">Workflows</h2>
+            <p className="text-xs text-[#9aa3ad]">
+              Build and manage your automation workflows
+            </p>
           </div>
 
           <div className="flex items-center gap-3">
-            <Button onClick={handleCreateWorkflow} className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white">
+            <Button
+              onClick={handleCreateWorkflow}
+              className="flex items-center gap-2 h-9 px-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-sm"
+            >
               <Plus className="h-4 w-4" />
-              New Workflow
+              <span className="text-sm">New Workflow</span>
             </Button>
           </div>
         </div>
 
         {workflows.length === 0 ? (
-          <Card className="border border-slate-200 bg-white shadow-sm">
-            <CardContent className="flex flex-col items-center justify-center py-12">
-              <p className="mb-4 text-slate-500">No workflows yet</p>
-              <Button onClick={handleCreateWorkflow} className="flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white">
-                <Plus className="mr-2 h-4 w-4" />
-                Create Your First Workflow
+          <Card className="border border-[#1f2933] bg-[#0b1017] shadow-none">
+            <CardContent className="flex flex-col items-center justify-center py-10">
+              <p className="mb-4 text-sm text-[#9aa3ad]">
+                No workflows yet. Create your first automation.
+              </p>
+              <Button
+                onClick={handleCreateWorkflow}
+                className="flex items-center gap-2 h-9 px-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white"
+              >
+                <Plus className="h-4 w-4" />
+                <span className="text-sm">Create workflow</span>
               </Button>
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {workflows.map((workflow) => (
               <Card
                 key={workflow.id}
-                className="bg-white border border-slate-200 hover:shadow-lg transition-shadow"
+                className="bg-[#0b1017] border border-[#1f2933] hover:border-[#2563eb] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.4)] transition-all"
               >
-                <CardHeader>
+                <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
-                    <div>
-                      <CardTitle className="text-slate-900">{workflow.title}</CardTitle>
-                      <CardDescription className="text-slate-500">
-                        {workflow.nodes.length} nodes
+                    <div className="space-y-1">
+                      <CardTitle className="text-sm font-medium text-[#e6eef6]">
+                        {workflow.title}
+                      </CardTitle>
+                      <CardDescription className="text-xs text-[#9aa3ad]">
+                        {workflow.nodes.length} node
+                        {workflow.nodes.length === 1 ? "" : "s"}
                       </CardDescription>
                     </div>
                     <div className="flex gap-1">
@@ -184,32 +174,32 @@ const Dashboard = () => {
                         size="icon"
                         onClick={() => navigate(`/workflow/${workflow.id}`)}
                         aria-label={`Open ${workflow.title}`}
-                         className="hover:bg-transparent"
+                        className="h-7 w-7 rounded-full hover:bg-[#111827]"
                       >
-                        <Settings className="h-4 w-4 text-slate-700" />
+                        <Settings className="h-3.5 w-3.5 text-[#9aa3ad]" />
                       </Button>
                       <Button
                         variant="ghost"
                         size="icon"
                         onClick={() => handleDeleteWorkflow(workflow.id)}
-                        aria-label={`Delete ${workflow.title}`} 
-                        className="hover:bg-transparent"
+                        aria-label={`Delete ${workflow.title}`}
+                        className="h-7 w-7 rounded-full hover:bg-[#111827]"
                       >
-                        <Trash2 className="h-4 w-4 text-red-500 hover:text-red-700 z-10" />
+                        <Trash2 className="h-3.5 w-3.5 text-red-400 hover:text-red-500" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="pt-0">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-500">
+                    <span className="text-[11px] text-[#6b7280]">
                       {new Date(workflow.createdAt).toLocaleDateString()}
                     </span>
                     <Button
                       size="sm"
                       variant="outline"
                       onClick={() => toast.info("Execution coming soon")}
-                      className="flex items-center gap-2"
+                      className="h-7 px-3 rounded-full border-[#1f2933] bg-transparent text-xs text-[#e6eef6] hover:bg-[#111827]"
                     >
                       <Play className="mr-1 h-3 w-3" />
                       Run

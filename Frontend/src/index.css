@@ -78,3 +78,113 @@ All colors MUST be HSL.
     @apply bg-background text-foreground;
   }
 }
+.react-flow {
+  background: #050b10 !important;
+}
+
+
+.react-flow__node,
+.react-flow__node-default,
+.react-flow__node-input {
+  background-color:rgba(0,0,0,0.3);   /* dark card */
+  color: #e6eef6 !important;              /* light text */
+  border: 1px solid #1f2937 !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 5px rgba(0,0,0,0.3);
+  padding: 8px 12px !important;
+  font-size: 14px !important;
+}
+
+
+.react-flow__node:hover {
+  border-color: #2f5aff !important;
+}
+
+
+.react-flow__node.selected {
+  box-shadow: 0 0 0 2px #2f5aff !important;
+}
+
+
+.react-flow__edge-path {
+  stroke: #3b4250 !important;
+  stroke-width: 2;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+  stroke: #2f5aff !important;
+}
+
+.react-flow__handle {
+  background: #2f5aff !important;
+  border-radius: 50% !important;
+  width: 10px !important;
+  height: 10px !important;
+}
+
+
+.react-flow__handle:hover {
+  background: #6b8cff !important;
+}
+
+
+
+.react-flow__minimap {
+  background-color: #0b0f14 !important;
+  border: 1px solid #1e242b !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4) !important;
+}
+
+.react-flow__minimap-mask {
+  fill: #121720 !important;
+}
+
+.react-flow__minimap-node {
+  fill: #2f5aff !important;
+  stroke: #1e40af !important;
+}
+
+.react-flow__controls {
+  background: #0f131a !important;
+  border: 1px solid #1e242b !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4) !important;
+}
+
+.react-flow__controls-button {
+  background: #11161b !important;
+  color: #e6eef6 !important;
+  border-bottom: 1px solid #1e242b !important;
+}
+
+.react-flow__controls-button:hover {
+  background: #1a2025 !important;
+  color: #ffffff !important;
+}
+
+
+.react-flow__attribution {
+  background: #0b0f14 !important;
+  color: #6b7280 !important;
+  border: 1px solid #1e242b !important;
+  padding: 4px 8px !important;
+  border-radius: 6px !important;
+}
+
+
+.react-flow *::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.react-flow *::-webkit-scrollbar-thumb {
+  background: #2b323c;
+  border-radius: 8px;
+}
+
+.react-flow *::-webkit-scrollbar-thumb:hover {
+  background: #3b4450;
+}
+
+.react-flow *::-webkit-scrollbar-track {
+  background: #0f131a;
+}

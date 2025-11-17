@@ -1,6 +1,5 @@
 import { Webhook, Send, Database, GitBranch, Zap } from "lucide-react";
 
-// This file is now the single source of truth for all node types.
 
 const nodeDefinitions = [
   { 
@@ -11,7 +10,7 @@ const nodeDefinitions = [
     description: "Trigger from HTTP request",
     parameters: [
       { name: 'method', label: 'HTTP Method', type: 'string', default: 'POST', required: true },
-      // Note: A 'path' parameter can be defined here if needed.
+      
     ] 
   },
   { 

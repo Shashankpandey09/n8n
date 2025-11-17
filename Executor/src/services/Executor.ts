@@ -213,6 +213,7 @@ export async function Init() {
             case "discord":
               //discord message
               const DiscMess = parsedParameters?.message;
+              const WebhookUrl:string=parsedParameters?.WebhookUrl;
 
               const embed: any = {
                 title: `Workflow: ${payload.workflowId}`,
@@ -250,7 +251,7 @@ export async function Init() {
                   inline: true,
                 });
               }
-              ok = await sendTelegram(process.env.DISCORD_WEBHOOK!, {
+              ok = await sendTelegram(WebhookUrl, {
                 embeds: [embed],
               });
               break;

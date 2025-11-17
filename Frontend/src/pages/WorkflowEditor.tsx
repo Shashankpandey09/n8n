@@ -14,11 +14,12 @@ import {
   Edge,
   NodeChange,
   EdgeChange,
+  Handle,
+  Position,
+  type NodeProps,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ArrowLeft, Save, Play, Trash } from "lucide-react";
 import { toast } from "sonner";
 import NodePalette from "@/components/workflow/NodePalette";
 import NodeInspector from "@/components/workflow/NodeInspector";
@@ -26,6 +27,86 @@ import { handleSave } from "@/utils/handleFunctions";
 import axios from "axios";
 import { useWebhook } from "@/store/Webhook";
 import { useCredStore } from "@/store/CredStore";
+import WorkflowNavbar from "@/components/workflow/WorkflowNavbar";
+import { Trash2 } from "lucide-react";
+
+type WFNodeData = {
+  label?: string;
+  type?: string;
+  [key: string]: any;
+};
+
+const BaseNode = ({
+  id,
+  data,
+  isTrigger,
+}: {
+  id: string;
+  data: WFNodeData;
+  isTrigger: boolean;
+}) => {
+  const label = data.label || data.type || "Node";
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    window.dispatchEvent(
+      new CustomEvent("workflow-delete-node", { detail: { id } })
+    );
+  };
+
+  return (
+    <div className="group relative  border-[#111827] bg-[#020817] ">
+      <div className="rounded-2xl relative shadow-sm px-4 py-2">
+        <div className=" text-center">
+          <span className="text-sm font-medium text-[#e5e7eb] capitalize">
+            {label}
+          </span>
+        </div>
+        <button
+          onClick={handleDeleteClick}
+          className="opacity-0 group-hover:opacity-100 fixed right-0  top-0 transition-opacity  hover:text-red-500 p-1"
+          title="Delete node"
+        >
+          <Trash2 className="w-3 h-3" />
+        </button>
+      </div>
+
+      {isTrigger ? (
+        <Handle
+          type="source"
+          position={Position.Bottom}
+          className="!bg-[#38bdf8] fixed bottom-0"
+        />
+      ) : (
+        <>
+          <Handle
+            type="target"
+            position={Position.Top}
+            className="!bg-[#38bdf8] fixed bottom-0"
+          />
+          <Handle
+            type="source"
+            position={Position.Bottom}
+            className="!bg-[#38bdf8] fixed bottom-0"
+          />
+        </>
+      )}
+    </div>
+  );
+};
+
+const TriggerNode = (props: NodeProps<WFNodeData>) => (
+  <BaseNode id={props.id} data={props.data} isTrigger />
+);
+
+const DefaultNode = (props: NodeProps<WFNodeData>) => (
+  <BaseNode id={props.id} data={props.data} isTrigger={false} />
+);
+
+const nodeTypes = {
+  input: TriggerNode,
+  default: DefaultNode,
+};
 
 const WorkflowEditor = () => {
   const { workflowId } = useParams();
@@ -33,13 +114,14 @@ const WorkflowEditor = () => {
   const path = useWebhook((s) => s.WebhookUrl);
   const [nodes, setNodes, onNodesChange] = useNodesState([] as Node[]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([] as Edge[]);
-  
+
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
 
   const [workflowTitle, setWorkflowTitle] = useState("New Workflow");
   const savedCredentials = useCredStore((s) => s.credentialsMetaData);
- const {setListening,setPolling}=useWebhook((s)=>s)
+  const { setListening, setPolling } = useWebhook((s) => s);
+
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
     const workflow = allWorkflows.find((w: any) => w.id === Number(workflowId));
@@ -69,41 +151,75 @@ const WorkflowEditor = () => {
     console.log("edges state updated:", edges);
   }, [edges]);
 
+  // helper to save with explicit nodes/edges (avoids race)
+  const saveWith = useCallback(
+    async (nextNodes: Node[], nextEdges: Edge[]) => {
+      await handleSave(
+        nextNodes,
+        nextEdges,
+        workflowId,
+        workflowTitle,
+        savedCredentials
+      );
+    },
+    [workflowId, workflowTitle, savedCredentials]
+  );
+
   const handleNodesDelete = useCallback(
     (deletedNodes: Node[]) => {
       const ids = deletedNodes.map((n) => n.id);
-      setNodes((nds) => nds.filter((n) => !ids.includes(n.id)));
-      console.log("onNodesDelete -> deleted nodes:", deletedNodes);
-      const filteredEdges = edges.filter(
-        (e) => !ids.includes(e.source) && !ids.includes(e.target)
-      );
-      console.log(filteredEdges);
-      setEdges(filteredEdges);
 
-      if (selectedNode && ids.includes(selectedNode.id)) {
-        setSelectedNode(null);
-      }
-      toast.success("Node(s) deleted");
+      setNodes((prevNodes) => {
+        const nextNodes = prevNodes.filter((n) => !ids.includes(n.id));
+
+        setEdges((prevEdges) => {
+          const nextEdges = prevEdges.filter(
+            (e) => !ids.includes(e.source) && !ids.includes(e.target)
+          );
+
+          void saveWith(nextNodes, nextEdges);
+          console.log("onNodesDelete -> deleted nodes:", deletedNodes);
+          console.log("remaining edges:", nextEdges);
+          return nextEdges;
+        });
+
+        if (selectedNode && ids.includes(selectedNode.id)) {
+          setSelectedNode(null);
+        }
+
+        setTimeout(() => toast.success("Node deleted"), 500);
+        return nextNodes;
+      });
     },
-    [setNodes, nodes, selectedNode]
+    [setNodes, setEdges, selectedNode, saveWith]
   );
 
   const handleEdgesDelete = useCallback(
     (deletedEdges: Edge[]) => {
       const ids = deletedEdges.map((e) => e.id).filter(Boolean) as string[];
-      setEdges((eds) => eds.filter((e) => !(e.id && ids.includes(e.id))));
-      console.log(
-        "onEdgesDelete -> deleted edges:",
-        deletedEdges,
-        "remaining:",
-        edges
-      );
-      if (selectedEdge && selectedEdge.id && ids.includes(selectedEdge.id)) {
-        setSelectedEdge(null);
-      }
-      toast.success("Edge(s) deleted");
+
+      setEdges((prevEdges) => {
+        const nextEdges = prevEdges.filter(
+          (e) => !(e.id && ids.includes(e.id))
+        );
+        void saveWith(nodes, nextEdges);
+
+        console.log(
+          "onEdgesDelete -> deleted edges:",
+          deletedEdges,
+          "remaining:",
+          nextEdges
+        );
+
+        if (selectedEdge && selectedEdge.id && ids.includes(selectedEdge.id)) {
+          setSelectedEdge(null);
+        }
+
+        setTimeout(() => toast.success("Node deleted"), 500);
+        return nextEdges;
+      });
     },
-    [setEdges, edges, selectedEdge]
+    [setEdges, nodes, selectedEdge, saveWith]
   );
 
   const handleNodesChange = useCallback(
@@ -139,13 +255,13 @@ const WorkflowEditor = () => {
     ActionType: string,
     description: string | string[]
   ) => {
-    const Desc = Array.isArray(description) ? description[0] : description;
     const newNode: Node = {
       id: `${Date.now()}`,
+   
       type: ActionType === "Trigger" ? "input" : "default",
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: {
-        label: Desc,
+        label: type,
         type,
         parameters: {},
         description,
@@ -157,7 +273,7 @@ const WorkflowEditor = () => {
     toast.success(`${type} node added`);
   };
 
-  const handleDeleteSelection = () => {
+  const handleDeleteSelection = useCallback(() => {
     if (selectedNode) {
       handleNodesDelete([selectedNode]);
     } else if (selectedEdge) {
@@ -165,168 +281,160 @@ const WorkflowEditor = () => {
     } else {
       toast.info("Select a node or edge first");
     }
-  };
+  }, [selectedNode, selectedEdge, handleNodesDelete, handleEdgesDelete]);
 
+ 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Delete") {
-        if (selectedNode) {
-          handleNodesDelete([selectedNode]);
-        } else if (selectedEdge) {
-          handleEdgesDelete([selectedEdge]);
-        }
+        handleDeleteSelection();
       }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [selectedNode, selectedEdge, handleNodesDelete, handleEdgesDelete]);
+  }, [handleDeleteSelection]);
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const custom = event as CustomEvent<{ id?: string }>;
+      const id = custom.detail?.id;
+      if (!id) return;
+      const node = nodes.find((n) => n.id === id);
+      if (!node) return;
+      handleNodesDelete([node]);
+    };
+
+    window.addEventListener("workflow-delete-node", handler);
+    return () => window.removeEventListener("workflow-delete-node", handler);
+  }, [nodes, handleNodesDelete]);
+
+  const handleBack = () => {
+    navigate("/dashboard");
+  };
+
+  const handleTest = useCallback(async () => {
+    try {
+      const raw = localStorage.getItem("validPayload");
+      if (!raw) {
+        toast.error("No payload found in localStorage");
+        return;
+      }
+      const payload = JSON.parse(raw);
+      const triggerId = payload?.nodes[0]?.id;
+      const triggerPayload = useWebhook
+        .getState()
+        .NodePayload.get(triggerId).output;
+
+      const res = await axios.post(
+        `http://localhost:3000/api/v1/webhook/handle/${path}`,
+        triggerPayload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (res.status === 200) {
+        toast.info("Executing workflow");
+      } else {
+        toast.error(`Unexpected status: ${res.status}`);
+      }
+    } catch (err: any) {
+      console.error(err);
+      const msg =
+        err?.response?.data?.message || err?.message || "Something went wrong";
+      toast.error(msg);
+    }
+  }, [path]);
+
+  const handleSaveClick = async () =>
+    await handleSave(nodes, edges, workflowId, workflowTitle, savedCredentials);
 
   return (
-    <div className="h-screen flex flex-col bg-background">
-      <header className="border-b">
-        <div className="flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/dashboard")}
-            >
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-            <Input
-              value={workflowTitle}
-              onChange={(e) => setWorkflowTitle(e.target.value)}
-              className="w-64"
-            />
-          </div>
+    <div className="h-screen flex flex-col bg-[#050b11] text-[#e6eef6]">
+      <WorkflowNavbar
+        workflowTitle={workflowTitle}
+        onTitleChange={setWorkflowTitle}
+        onBack={handleBack}
+        onTest={handleTest}
+        onSave={handleSaveClick}
+        onDeleteSelection={handleDeleteSelection}
+      />
 
-          <div className="flex gap-2 items-center">
-            <Button
-              variant="outline"
-              onClick={async () => {
-                try {
-                  const raw = localStorage.getItem("validPayload");
-                  if (!raw) {
-                    toast.error("No payload found in localStorage");
-                    return;
-                  }
-                  const payload = JSON.parse(raw);
-                  const triggerId=payload?.nodes[0]?.id
-                  const triggerPayload=useWebhook.getState().NodePayload.get(triggerId).output
-                  const res = await axios.post(
-                    `http://localhost:3000/api/v1/webhook/handle/${path}`,
-                    triggerPayload,
-                    {
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem(
-                          "token"
-                        )}`,
-                      },
-                    }
-                  );
-
-                  if (res.status === 200) {
-                    toast.info("Executing workflow");
-                  } else {
-                    toast.error(`Unexpected status: ${res.status}`);
-                  }
-                } catch (err) {
-                  console.error(err);
-                  const msg =
-                    err?.response?.data?.message ||
-                    err?.message ||
-                    "Something went wrong";
-                  toast.error(msg);
-                }
-              }}
-            >
-              test
-              <Play />
-            </Button>
-            <Button
-              onClick={() =>
-                handleSave(
-                  nodes,
-                  edges,
-                  workflowId,
-                  workflowTitle,
-                  savedCredentials
-                )
-              }
-            >
-              <Save className="mr-2 h-4 w-4" />
-              Save
-            </Button>
-
-            {/* Delete selected node/edge */}
-            <Button variant="destructive" onClick={handleDeleteSelection}>
-              <Trash className="mr-2 h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 relative overflow-hidden">
         <NodePalette onAddNode={handleAddNode} nodes={nodes} />
 
-        <div className="flex-1">
+        <div className="flex-1 bg-[#050b11]">
           <ReactFlow
             nodes={nodes}
             edges={edges}
+            nodeTypes={nodeTypes}
             onNodesChange={handleNodesChange}
             onEdgesChange={handleEdgesChange}
             onConnect={onConnect}
             onNodeClick={handleNodeClick}
             onEdgeClick={handleEdgeClick}
-            onNodesDelete={handleNodesDelete} // ensure deletable via flow's built-in actions
+            onNodesDelete={handleNodesDelete}
             onEdgesDelete={handleEdgesDelete}
             fitView
           >
             <Controls />
-            <MiniMap />
-            <Background variant={BackgroundVariant.Dots} gap={12} size={1} />
+            <MiniMap
+              style={{ background: "#020617" }}
+              nodeColor={() => "#1f2937"}
+              maskColor="rgba(15,23,42,0.85)"
+            />
+            <Background
+              variant={BackgroundVariant.Dots}
+              gap={16}
+              size={1}
+              color="#1f2933"
+            />
           </ReactFlow>
         </div>
 
         {selectedNode && (
-          <NodeInspector
-            node={selectedNode}
-            onClose={() => {setSelectedNode(null)
-              setListening(true);
-              setPolling(false)
-            }}
-            onUpdate={(updatedNode) => {
-              setNodes((nds) =>
-                nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
-              );
-              setSelectedNode(updatedNode);
-              console.log("node updated via inspector:", updatedNode);
-            }}
-            workflowId={workflowId}
-            workflowTitle={workflowTitle}
-            edges={edges}
-            savedCredentials={savedCredentials}
-            Nodes={nodes}
-          />
+          <div className="fixed inset-0 z-50 bg-black/40">
+            <NodeInspector
+              node={selectedNode}
+              onClose={() => {
+                setSelectedNode(null);
+                setListening(true);
+                setPolling(false);
+              }}
+              onUpdate={(updatedNode) => {
+                setNodes((nds) =>
+                  nds.map((n) => (n.id === updatedNode.id ? updatedNode : n))
+                );
+                setSelectedNode(updatedNode);
+                console.log("node updated via inspector:", updatedNode);
+              }}
+              workflowId={workflowId}
+              workflowTitle={workflowTitle}
+              edges={edges}
+              savedCredentials={savedCredentials}
+              Nodes={nodes}
+            />
+          </div>
         )}
 
-        {/* Optional simple inspector for edges (could be replaced by a full EdgeInspector) */}
         {selectedEdge && (
-          <div className="w-80 border-l p-4 bg-muted">
+          <div className="w-80 border-l border-[#1f2933] p-4 bg-[#0b1017] text-[#e6eef6]">
             <div className="flex justify-between items-start">
               <h3 className="text-lg font-medium">Edge</h3>
               <Button
                 size="icon"
                 variant="ghost"
+                className="rounded-full hover:bg-[#111827]"
                 onClick={() => setSelectedEdge(null)}
               >
                 ✕
               </Button>
             </div>
 
-            <div className="mt-4 space-y-2">
+            <div className="mt-4 space-y-2 text-sm">
               <div>
                 <strong>ID:</strong> {selectedEdge.id ?? "(no id)"}
               </div>
@@ -339,6 +447,7 @@ const WorkflowEditor = () => {
 
               <div className="mt-4 flex gap-2">
                 <Button
+                  className="bg-[#b91c1c] hover:bg-[#991b1b]"
                   onClick={() => {
                     handleEdgesDelete([selectedEdge]);
                   }}
