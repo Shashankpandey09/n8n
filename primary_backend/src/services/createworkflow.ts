@@ -80,7 +80,6 @@ export async function createWorkflow(
       },
     });
 
-    // Return helpful information for the frontend:
     if (!runnable) {
       // Return warnings so UI can highlight missing params etc.
       return {

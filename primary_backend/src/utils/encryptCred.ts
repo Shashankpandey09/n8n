@@ -1,8 +1,8 @@
 // Simple encrypt/decrypt using libsodium secretbox (XSalsa20-Poly1305).
 import sodium from 'libsodium-wrappers';
 
-// call init() once at app start
 export async function init() { await sodium.ready;}
+
 export function encryptObjectWithKeyBase64(keyBase64:any, obj:any) {
   const key = Buffer.from(keyBase64, 'base64'); // Uint8Array OK too
   const nonce = sodium.randombytes_buf(sodium.crypto_secretbox_NONCEBYTES);

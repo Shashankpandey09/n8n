@@ -49,7 +49,7 @@ export const useWebhook = create<Webhook>((set) => ({
           },
         }
       );
-      console.log(res.data.webhook.path);
+      
       set({ success: true, WebhookUrl: res.data.webhook.path });
     } catch (error) {
       console.error("Error fetching webhook URL:", error);
@@ -85,7 +85,7 @@ export const useWebhook = create<Webhook>((set) => ({
 
       const data = res?.data.data ?? { input: null, output: null };
 
-      console.log("fetchNode", NodeId, type, res.data);
+   
 
       const prevMap = useWebhook.getState().NodePayload ?? new Map<string, NodeIO>();
       const nextMap = new Map(prevMap);
@@ -93,7 +93,7 @@ export const useWebhook = create<Webhook>((set) => ({
       if (type === "webhook") {
         // treat webhook payload as output for this node
         const webhookOutput = data.output ?? data.input ?? null;
-        console.log(webhookOutput)
+        
         
         // Keep listening if no data received yet
       
@@ -156,7 +156,7 @@ export const useWebhook = create<Webhook>((set) => ({
         }
       );
       set({success: true ,listening:true});
-      console.log(res.data);
+  
     } catch (error) {
       console.log("error during executing the node ");
       set({ success: false });
@@ -199,13 +199,13 @@ export const useWebhook = create<Webhook>((set) => ({
 
     const state = useWebhook.getState();
     const nodeMap = state.NodePayload;
-    console.log('connections--->',connections)
+   
     const parentIds = connections
       .filter((c) => c.target === childId )
       .map((c) => c.source);
-    console.log('parentIDs--->', parentIds)
+    
     if (parentIds.length === 0) {
-      console.log("No parents found for", childId);
+     
       return;
     }
 
@@ -214,7 +214,7 @@ export const useWebhook = create<Webhook>((set) => ({
       .filter((o): o is Record<string, any> => o !== null);
 
     const merged:Record<string,any>|null = outputs.length ? Object.assign({}, ...outputs) : null;
-    console.log("merge parent",merged)
+   
 
     const next = new Map(nodeMap);
     const prevChild = nodeMap.get(childId);

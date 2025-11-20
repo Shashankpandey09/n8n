@@ -166,7 +166,7 @@ WebhookRouter.all(
           },
         },
       });
-      console.log(webhook);
+     
       if (!webhook) {
         return res
           .status(400)

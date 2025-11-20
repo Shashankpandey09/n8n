@@ -1,4 +1,3 @@
-
 import prisma from "@shashankpandey/prisma";
 import { JsonValue } from "@shashankpandey/prisma/generated/prisma/runtime/library";
 
@@ -10,7 +9,7 @@ export type NodeOutput = {
 export class ExecutionHelper {
   private static instance: ExecutionHelper | null = null;
 
-  private previousNodesOutput: NodeOutput[]  = [];
+  private previousNodesOutput: NodeOutput[] = [];
 
   private constructor() {}
 
@@ -25,13 +24,12 @@ export class ExecutionHelper {
     executionId: number
   ): Promise<NodeOutput[]> {
     // if same executionId, return cached data
-  
+
     const rows = await prisma.executionTask.findMany({
       where: { executionId },
       select: { nodeId: true, output: true },
     });
-    console.log("rows")
-    console.log(rows)
+
     this.previousNodesOutput = rows.map((r) => ({
       nodeId: String(r.nodeId),
       output: (r.output ?? null) as JsonValue | null,
@@ -40,38 +38,36 @@ export class ExecutionHelper {
     return this.previousNodesOutput;
   }
 
-  public async getParentNodeOutput(parentNodeId: string|null): Promise<JsonValue | null> {
-    console.log('reached')
-    if (!parentNodeId && (this.previousNodesOutput.length==0)) return null;
-    
+  public async getParentNodeOutput(
+    parentNodeId: string | null
+  ): Promise<JsonValue | null> {
+    if (!parentNodeId && this.previousNodesOutput.length == 0) return null;
+
     const found = this.previousNodesOutput.find(
       (n) => String(n.nodeId) === String(parentNodeId)
     );
-    console.log('parentID----->',parentNodeId)
-    if(!found&&parentNodeId){
+
+    if (!found && parentNodeId) {
       //doing a db query
-      const parentOutput=await prisma.executionTask.findFirst({
-        where:{
-          nodeId:parentNodeId,
- 
+      const parentOutput = await prisma.executionTask.findFirst({
+        where: {
+          nodeId: parentNodeId,
         },
-        select:{
-          output:true
+        select: {
+          output: true,
         },
-        orderBy:{
-          finishedAt:'desc'
-        }
-      })
-      return parentOutput?.output??null
+        orderBy: {
+          finishedAt: "desc",
+        },
+      });
+      return parentOutput?.output ?? null;
     }
-    console.log('found')
-    console.log(found)
+
     return found?.output ?? null;
   }
 
   public clearCache() {
     this.previousNodesOutput = [];
-   
   }
 }
 

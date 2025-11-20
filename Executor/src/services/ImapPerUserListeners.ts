@@ -24,15 +24,12 @@ async function processMailAndResume(
   try {
     const parsed: ParsedMail = await simpleParser(source);
     const inReplyTo = parsed.inReplyTo;
-    console.log("parsed_TEXT----->", parsed.text);
-    console.log("pased HTML------>", parsed.html);
 
     // If this header doesn't exist, it's not a reply we are looking for.
     if (!inReplyTo) {
-      console.log("no inreplyID");
-      return; // Gracefully ignore the email.
+      return;
     }
-    console.log("reached");
+
     // Find the waiting workflow using the In-Reply-To value, scoped by the user.
     const waitEntry = await prisma.emailWait.findFirst({
       where: {
@@ -52,19 +49,22 @@ async function processMailAndResume(
     );
 
     // Update the EmailWait status using its unique ID to prevent reprocessing.
-   
+
     const message = parseEmailReply(parsed.text);
-    
-    const resumePayload = waitEntry.IsTest?{
-      workflowId: waitEntry.workflowId,
-      executionId: waitEntry.executionId,
-      targetNodeId:waitEntry.nodeId,
-      isTest:true
-    }:{  workflowId: waitEntry.workflowId,
-      executionId: waitEntry.executionId,
-      isTest:false
-    }
-     
+
+    const resumePayload = waitEntry.IsTest
+      ? {
+          workflowId: waitEntry.workflowId,
+          executionId: waitEntry.executionId,
+          targetNodeId: waitEntry.nodeId,
+          isTest: true,
+        }
+      : {
+          workflowId: waitEntry.workflowId,
+          executionId: waitEntry.executionId,
+          isTest: false,
+        };
+
     await prisma.$transaction(async (ctx) => {
       await ctx.emailWait.update({
         where: { id: waitEntry.id },
@@ -73,23 +73,22 @@ async function processMailAndResume(
       const taskId = await ctx.executionTask.findFirst({
         where: {
           nodeId: waitEntry.nodeId,
-          executionId:waitEntry.executionId
+          executionId: waitEntry.executionId,
         },
         select: {
           id: true,
         },
-        orderBy:{
-          startedAt:'desc'
-        }
+        orderBy: {
+          startedAt: "desc",
+        },
       });
       await ctx.executionTask.update({
         where: {
           id: taskId?.id,
-         
         },
         data: {
           output: message,
-           status:"SUCCESS"
+          status: "SUCCESS",
         },
       });
     });
@@ -100,7 +99,7 @@ async function processMailAndResume(
       messages: [{ value: JSON.stringify(resumePayload) }],
     });
 
-    console.log(`✅ Resumed workflow ${waitEntry.workflowId}`);
+    console.log(`Resumed workflow ${waitEntry.workflowId}`);
     return true;
   } catch (error) {
     console.error("Error in processMailAndResume:", error);
@@ -135,17 +134,14 @@ async function fetchAndProcessUnseen(
       return;
     }
 
-    // if the user is waiting for replies then initially fetch the in reply to headers
     const uids = await client.search({
       seen: false,
       since: startup
         ? new Date(Date.now() - 1000 * 24 * 3600)
         : new Date(Date.now() - 10000 * 6),
     });
-    //printing uuids
-    console.log(uids);
+
     if (!uids || uids.length === 0) {
-      console.log("no uuid found");
       return;
     }
 
@@ -166,11 +162,9 @@ async function fetchAndProcessUnseen(
         messageIdToProcess.push({ messageId, id });
         uuidsToProcess.push(id);
         UIDs.push(message.uid);
-        console.log(message.uid);
       }
     }
-    console.log("uuuuids--->", uuidsToProcess);
-    console.log("messageID----->", messageIdToProcess);
+
     if (uuidsToProcess.length === 0) {
       console.log("No matching unseen replies found among unseen emails.");
       return;
@@ -178,13 +172,11 @@ async function fetchAndProcessUnseen(
 
     // now fetching source for these uuids
     for await (const msg of client.fetch(uuidsToProcess, { source: true })) {
-      console.log(" before reached fetch");
       if (msg.source) {
-        console.log("reached fetch");
         const message = messageIdToProcess.find(
           (e) => e.id === Number(msg.seq)
         );
-        console.log(message?.id);
+
         await processMailAndResume(msg.source, userId, message?.messageId!);
       }
     }
@@ -194,7 +186,6 @@ async function fetchAndProcessUnseen(
       await client.messageFlagsAdd(UIDs, ["\\Seen"], { uid: true });
       console.log("marked seen");
     }
-    console.log("marked seen");
   } catch (error) {
     console.error(`Error fetching unseen mail for user ${userId}:`, error);
   }
@@ -221,12 +212,12 @@ async function startListening(wait: { userId: number }) {
     await client.mailboxOpen("INBOX");
 
     const existsHandler = async () => {
-      console.log(`📬 New mail detected for user ${userId} `);
+      console.log(` New mail detected for user ${userId} `);
       await fetchAndProcessUnseen(client, userId);
     };
 
     client.on("exists", existsHandler);
-    console.log(`👂 Started IMAP listener for user ${userId}`);
+    console.log(` Started IMAP listener for user ${userId}`);
 
     // Process any emails that arrived while the service was offline.
     await fetchAndProcessUnseen(client, userId, true);
@@ -237,7 +228,7 @@ async function startListening(wait: { userId: number }) {
 
 export async function InitImap() {
   await producer.connect();
-  console.log("📬 Mailroom service starting...");
+  console.log(" Mailroom service starting...");
   while (true) {
     try {
       // Find distinct users who are waiting for an email.

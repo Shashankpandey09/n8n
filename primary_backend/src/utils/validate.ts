@@ -55,26 +55,20 @@ export function validate(nodes: NodeAny[] = [], connections: ConnAny[] = []) {
       continue;
     }
 
-    seen.add(n.id);
-    // nodeById.set(n.id, n);
-
+    seen.add(n.id)
     const def = nodeCatalog.find(d => d.type === n.type);
     if (!def) {
       err.push({ type: 'unknown_node_type', message: `Unknown action/trigger type: ${n.type}`, nodeId: n.id });
-      // still ensure params/meta exist so UI code won't blow up
       n.parameters = n.parameters ?? {};
       n.meta = n.meta ?? {};
       continue;
     }
 
-    // ensure params/meta objects exist and apply defaults
+    
     n.parameters = n.parameters ?? {};
     n.meta = n.meta ?? {};
 
     for (const p of def.parameters ?? []) {
-      // if (n.parameters[p.name] === undefined && p.default !== undefined) {
-      //   n.parameters[p.name] = p.default;
-      // }
       const required = p.required ?? true;
       const value = n.parameters[p.name];
       const isMissing = required && (value === undefined || value === null || value === '');
@@ -123,7 +117,7 @@ export function validate(nodes: NodeAny[] = [], connections: ConnAny[] = []) {
   return {
     nodes,
     connections,
-    err,           // array of error objects (for UI listing)
+    err,           // array of error objects (for UI)
     missingParams,  // { nodeId: [paramName, ...] } for field highlighting
    missingCredId,
     valid

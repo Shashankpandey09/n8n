@@ -11,7 +11,7 @@ const SIGNup_SignInSchema=z.object({
  password:z.string().min(4,"Min 4 characters require")
 })
 const SECRET_KEY=process.env.SECRET_KEY!
-console.log('Secret_key ----->',SECRET_KEY)
+
 UserRouter.post("/signup",async(req:Request,res:Response)=>{
   try {
     const {username,password}=req.body

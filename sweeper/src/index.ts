@@ -43,13 +43,13 @@ async function main() {
     } catch (error:any) {
    
         if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2021') {
-        console.log("Outbox table not found. Waiting for it to be created... Retrying in 1 second.")
+        console.log("Outbox table not found. Waiting for it to be created... Retrying in 5 second.")
         }
         else{
              console.error("Error processing outbox:", error);
         }
         
-      // backoff a bit longer on failure
+      // back offing a bit longer on failure
       await new Promise((r) => setTimeout(r, 5000));
     }
   }

@@ -37,11 +37,7 @@ export async function Init() {
         }
 
         const payload = JSON.parse(raw);
-        if (
-          !payload.workflowId ||
-          !payload.executionId 
-       
-        ) {
+        if (!payload.workflowId || !payload.executionId) {
           console.warn(
             "message missing workflowId or executionId or payload",
             payload
@@ -80,19 +76,16 @@ export async function Init() {
         const prevTaskNodes = await executionHelper.getPreviousExecutionTasks(
           payload.executionId
         );
-        console.log('previous tasks');
-        console.log(prevTaskNodes)
 
         const doneNodeIds = new Set(prevTaskNodes.map((p) => String(p.nodeId)));
 
         // Read target node id from top-level message (not from stringified ExecutionPayload)
-     
 
         // - If targetNodeId is provided -> run that node (even if it's not in remainingNodes for this execution)
         // - Else -> pick the first node that hasn't run yet (full-run)
         let nodeToExecute = null;
 
-        if (targetNodeId&&payload.isTest) {
+        if (targetNodeId && payload.isTest) {
           nodeToExecute = nodes.find(
             (n) => String(n.id) === String(targetNodeId)
           );
@@ -100,7 +93,7 @@ export async function Init() {
             console.warn(
               `targetNodeId ${targetNodeId} not found in workflow ${payload.workflowId} nodes`
             );
-            
+
             await consumer.commitOffsets([
               {
                 topic,
@@ -164,7 +157,7 @@ export async function Init() {
         const parent_node_Output = await executionHelper.getParentNodeOutput(
           parentNodeId!
         );
-        console.log('parent_node_output---->',parent_node_Output)
+
         try {
           task = await prisma.executionTask.create({
             data: {
@@ -173,11 +166,11 @@ export async function Init() {
               status: "RUNNING",
               attempts: 1,
               input:
-                 parent_node_Output === null
+                parent_node_Output === null
                   ? Prisma.JsonNull
                   : parent_node_Output,
-                  startedAt:new Date(),
-                  finishedAt:new Date()
+              startedAt: new Date(),
+              finishedAt: new Date(),
             },
           });
         } catch (e: any) {
@@ -200,7 +193,7 @@ export async function Init() {
 
         try {
           //email message
-  
+
           // need to check wether the parameters of node are fixed or {{$Json.Expression}}
           //A function that parse the node parameters and mutates the key value pair on the basis of expression (string or json)
           //This accepts the parent node output object and the node parameters
@@ -208,12 +201,12 @@ export async function Init() {
             nodeToExecute.parameters,
             parent_node_Output!
           );
-          console.log(parsedParameters)
+
           switch (nodeToExecute.type) {
             case "discord":
               //discord message
               const DiscMess = parsedParameters?.message;
-              const WebhookUrl:string=parsedParameters?.WebhookUrl;
+              const WebhookUrl: string = parsedParameters?.WebhookUrl;
 
               const embed: any = {
                 title: `Workflow: ${payload.workflowId}`,
@@ -260,7 +253,7 @@ export async function Init() {
               console.log(nodeToExecute.parameters);
 
               const { to, from, body, subject } = parsedParameters;
-              
+
               const credential = await FetchCred("smtp", wf?.userId!);
               if (credential) {
                 ok = await sendEmail(
@@ -280,14 +273,13 @@ export async function Init() {
 
             default:
               console.log("unknown node type:", nodeToExecute.type);
-              ok={success:false}
+              ok = { success: false };
               break;
           }
 
           // mark task success
 
           if (ok!.success) {
-            console.log(ok)
             await prisma.executionTask.update({
               where: { id: task.id },
               data: {
@@ -297,7 +289,9 @@ export async function Init() {
                     : TaskStatus.SUCCESS,
                 },
                 finishedAt: new Date(),
-                output:ok?.data?ok.data as InputJsonValue:Prisma.JsonNull
+                output: ok?.data
+                  ? (ok.data as InputJsonValue)
+                  : Prisma.JsonNull,
               },
               //i need to push The workflow id and execution id
             });
@@ -316,7 +310,7 @@ export async function Init() {
               attempts: { increment: 1 },
             },
           });
-         
+
           // but here we commit to avoid blocking pipeline; consider your retry strategy.
           await consumer.commitOffsets([
             {
