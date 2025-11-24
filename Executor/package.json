@@ -11,7 +11,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shashankpandey/prisma": "^1.2.5",
+    "@shashankpandey/prisma": "^1.2.6",
     "@types/axios": "^0.9.36",
     "@types/imapflow": "^1.0.23",
     "@types/kafkajs": "^1.8.2",
@@ -24,7 +24,8 @@
     "lru-cache": "^11.2.2",
     "mailparser": "^3.7.4",
     "nodemailer": "^7.0.6",
-    "uuid": "^13.0.0"
+    "uuid": "^13.0.0",
+    "typescript": "5.6.2"
   },
   "devDependencies": {
     "@types/libsodium-wrappers": "^0.7.14",

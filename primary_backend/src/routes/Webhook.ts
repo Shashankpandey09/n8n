@@ -28,12 +28,11 @@ WebhookRouter.get(
   Authenticate,
   async (req: ExtendedReq, res: Response) => {
     try {
-      const userId = req.userId || 1;
+      const userId = req.userId ;
       const workflowId = Number(req.params.workflowId);
-      // const parsedData=webhookSchema.safeParse(req.body)
-      // if(!parsedData.success){
-      //   return
-      // }
+      
+      
+      //i can cache the webhook here in Memory to limit the db calls 
       const Webhook = await prisma.webhook.findFirst({
         where: {
           workflowId: workflowId,
