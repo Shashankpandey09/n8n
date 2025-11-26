@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsc -b && node dist/bin.js",
-    "test": "dotenv -e .env.example -- vitest run",
+    "test": "npx dotenv -e .env.example -- vitest run",
     "test:integration": "npm run test"
   },
   "keywords": [],
@@ -27,8 +27,8 @@
     "typescript": "5.6.2",
     "uuid4": "^2.0.3",
     "vitest": "^4.0.13",
-    "zod": "^4.1.9",
-      "dotenv-cli": "^11.0.0"
+    "zod": "^4.1.9"
+
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
