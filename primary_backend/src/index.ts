@@ -12,7 +12,7 @@ import dotenv from 'dotenv'
 import NodeRouter from './routes/Nodes'
 import { credLimiter, nodeExecLimiter, userLimiter, webhookLimiter, workflowLimiter } from './middleware/rateLimiter'
 
-const app=express()
+ const app=express()
 app.use(cors({origin:'*'}))
 app.use(express.json())
 dotenv.config()
@@ -22,4 +22,4 @@ app.use('/api/v1/workflow',workflowLimiter,WorkFlowRouter)
 app.use('/api/v1/webhook',webhookLimiter,WebhookRouter)
 app.use('/api/v1/credential',credLimiter,CredRouter)
 app.use('/api/v1/Nodes',nodeExecLimiter,NodeRouter)
-app.listen(3000,()=>console.log('server started'))
+export default app

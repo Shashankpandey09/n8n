@@ -9,7 +9,7 @@ export class Singleton {
   private  constructor() {
     this.kafka = new Kafka({
       clientId: "my-app",
-      brokers: ["localhost:9092"],
+      brokers: ["kafka:9093"],
     });
     this.producer = this.kafka.producer();
 

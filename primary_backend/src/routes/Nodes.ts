@@ -30,7 +30,7 @@ NodeRouter.get("/get", Authenticate, async (req: Request, res: Response) => {
       },
     });
 
-    console.log(node);
+    console.log('node---->',node);
     return res.status(200).json({
       message: "Node data fetched successfully",
       data: node,

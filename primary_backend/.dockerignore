@@ -7,3 +7,5 @@ docker-compose.yml
 *.log
 dist
 build
+.env
+.env.docker

@@ -89,21 +89,18 @@ WorkFlowRouter.put(
         });
       }
 
-      // Verify ownership: find the workflow belonging to this user
       const existing = await prisma.workflow.findFirst({
         where: { id: workflowId, userId },
       });
 
       if (!existing) {
-        // either not found or not owned by user
         return res
           .status(404)
           .json({ ok: false, message: "Workflow not found or not accessible" });
       }
 
-      // perform update
       const WORKFLOW = await prisma.workflow.update({
-        where: { id: workflowId }, // unique id is ok now that we checked ownership
+        where: { id: workflowId }, 
         data: {
           nodes: normalized.nodes,
           connections: normalized.connections,
@@ -111,7 +108,6 @@ WorkFlowRouter.put(
         },
       });
 
-      // If invalid (non-runnable) return 400 with warnings
       if (!normalized.valid) {
         return res.status(200).json({
           ok: true,
