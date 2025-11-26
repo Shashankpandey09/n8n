@@ -61,7 +61,7 @@ services:
       dockerfile: Dockerfile
     container_name: primary_backend
     env_file:
-      - ./primary_backend/.env.docker
+      - ./primary_backend/.env.example
     depends_on:
        postgres:
         condition: service_healthy 
