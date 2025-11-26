@@ -1,0 +1,20 @@
+{
+  "name": "n8n",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "bash ./scripts/run-tests.sh"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Shashankpandey09/n8n.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Shashankpandey09/n8n/issues"
+  },
+  "homepage": "https://github.com/Shashankpandey09/n8n#readme"
+}

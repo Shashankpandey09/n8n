@@ -1,4 +1,4 @@
-// src/ImapListeners.ts
+
 import prisma from "@shashankpandey/prisma";
 import { cache, getOrCreateImapClient } from "../utils/ImapClientCache";
 import { simpleParser, ParsedMail } from "mailparser";
@@ -8,7 +8,7 @@ import { FetchCred } from "../utils/FetchCreds";
 import { CredManager } from "../utils/CredManager";
 import { parseEmailReply } from "../utils/parseEmailReply";
 
-const kafka = new Kafka({ clientId: "Imap", brokers: ["localhost:9092"] });
+const kafka = new Kafka({ clientId: "Imap", brokers: ["kafka:9092"] });
 const producer = kafka.producer();
 type uuidType = {
   messageId: string;

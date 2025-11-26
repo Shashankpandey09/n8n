@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+       POSTGRES_USER: postgres
+       POSTGRES_PASSWORD: postgres
+       POSTGRES_DB: postgres
+    ports: 
+     - "5432:5432"
+    volumes:
+     - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 2s
+      timeout: 5s
+      retries: 10 
+    restart: unless-stopped
+  
+    
+
+  kafka:
+    image: apache/kafka:latest
+    container_name: kafka
+    environment:
+      KAFKA_LISTENERS: "CONTROLLER://localhost:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093"
+      KAFKA_ADVERTISED_LISTENERS: "HOST://localhost:9092,DOCKER://kafka:9093"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT"
+
+      KAFKA_NODE_ID: "1"
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@localhost:9091"
+
+
+      KAFKA_INTER_BROKER_LISTENER_NAME: "DOCKER"
+
+     
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: "1"
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: "1"
+
+      KAFKA_LOG_DIRS: "/var/lib/kafka/data"
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+      KAFKA_HEAP_OPTS: "-Xms256m -Xmx256m"
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    mem_limit: "512m" 
+
+    healthcheck:
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/localhost/9092"]
+      interval: 5s
+      timeout: 3s
+      retries: 10         
+    restart: unless-stopped
+    
+  primary_backend:
+    build:
+      context: ./primary_backend
+      dockerfile: Dockerfile
+    container_name: primary_backend
+    env_file:
+      - ./primary_backend/.env.docker
+    depends_on:
+       postgres:
+        condition: service_healthy 
+       kafka : 
+          condition: service_healthy
+         
+    ports:
+      - "3000:3000"   
+    
+
+  executor:
+    build:
+      context: ./Executor
+      dockerfile: Dockerfile
+    container_name:  Executor
+    env_file:
+      - ./Executor/.env
+    depends_on:
+       postgres: 
+        condition: service_healthy
+       kafka : 
+          condition: service_healthy
+  
+
+  sweeper:
+    build:
+      context: ./sweeper
+      dockerfile: Dockerfile
+    container_name: sweeper
+    env_file:
+      - ./sweeper/.env
+    depends_on:
+      postgres: 
+       condition: service_healthy
+      kafka : 
+        condition: service_healthy
+
+volumes:
+  postgres_data:  
+  kafka_data:

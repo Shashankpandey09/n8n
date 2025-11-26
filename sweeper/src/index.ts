@@ -6,7 +6,7 @@ dotenv.config()
 async function main() {
   const kafka = new Kafka({
     clientId: "my-app",
-    brokers: ["localhost:9092"],
+    brokers: ["kafka:9093"],
   });
   const producer = kafka.producer();
   producer.on("producer.connect", () => console.log("producer connected"));
