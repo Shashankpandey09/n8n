@@ -54,50 +54,6 @@ services:
       timeout: 3s
       retries: 10         
     restart: unless-stopped
-    
-  primary_backend:
-    build:
-      context: ./primary_backend
-      dockerfile: Dockerfile
-    container_name: primary_backend
-    env_file:
-      - ./primary_backend/.env
-    depends_on:
-       postgres:
-        condition: service_healthy 
-       kafka : 
-          condition: service_healthy
-         
-    ports:
-      - "3000:3000"   
-    
-
-  executor:
-    build:
-      context: ./Executor
-      dockerfile: Dockerfile
-    container_name:  Executor
-    env_file:
-      - ./Executor/.env
-    depends_on:
-       postgres: 
-        condition: service_healthy
-       kafka : 
-          condition: service_healthy
-  
-
-  sweeper:
-    build:
-      context: ./sweeper
-      dockerfile: Dockerfile
-    container_name: sweeper
-    env_file:
-      - ./sweeper/.env
-    depends_on:
-      postgres: 
-       condition: service_healthy
-      kafka : 
-        condition: service_healthy
 
 volumes:
   postgres_data:  

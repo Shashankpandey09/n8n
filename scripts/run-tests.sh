@@ -19,7 +19,7 @@ wait_for() {
 }
 
 echo "=== Starting full docker-compose stack ==="
-docker compose up  -d
+docker compose -f docker-compose.test.yml up -d
 
 echo "=== Checking required infra services ==="
 wait_for postgres

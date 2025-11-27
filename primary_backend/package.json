@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "tsc -b && node dist/bin.js",
-    "test": "npx dotenv -e .env.example -- vitest run",
+    "test": "npx dotenv -e .env vitest run",
     "test:integration": "npm run test"
   },
   "keywords": [],
