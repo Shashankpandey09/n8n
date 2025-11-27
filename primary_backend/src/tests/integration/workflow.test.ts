@@ -5,9 +5,9 @@ import app from "../../index";
 import { resetDb } from "../helpers/reset-db";
 import { createTestUser } from "../helpers/createTestUser "; 
 import prisma from "@shashankpandey/prisma";
-import dotenv from 'dotenv'
 
-dotenv.config()
+
+
 describe("All Endpoints Integration Tests (workflow / webhook / node / cred)", () => {
   let token: string;
   let userId: number;
