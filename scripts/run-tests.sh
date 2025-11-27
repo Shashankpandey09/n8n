@@ -26,6 +26,9 @@ echo "=== Checking required infra services ==="
 wait_for postgres
 wait_for kafka
 
+echo "=== migrating database ==="
+(cd common && npx prisma migrate deploy)
+
 echo
 echo "=== Running primary_backend integration tests ==="
 (cd primary_backend && npm run test:integration)

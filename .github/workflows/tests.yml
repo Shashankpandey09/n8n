@@ -42,10 +42,14 @@ jobs:
       - name: Install dependencies for Executor
         working-directory: ./Executor
         run: npm ci
+
+      - name: create .env for common
+        run: |
+          echo "DATABASE_URL=${DATABASE_URL}" > common/.env  
      
-      - name: migrate the Postgres database
+      - name: installing dep for common
         working-directory: ./common
-        run: npm install && npx prisma migrate deploy
+        run: npm ci
  
       - name: Run tests
         run: npm run test
