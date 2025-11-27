@@ -12,7 +12,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@shashankpandey/prisma": "^1.2.6",
+    "@shashankpandey/prisma": "^1.2.7",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
@@ -28,7 +28,6 @@
     "uuid4": "^2.0.3",
     "vitest": "^4.0.13",
     "zod": "^4.1.9"
-
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
