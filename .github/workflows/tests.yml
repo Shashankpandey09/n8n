@@ -43,15 +43,9 @@ jobs:
         working-directory: ./Executor
         run: npm ci
      
-      - name: Debug DATABASE_URL + .env
-        run: |
-          echo "DATABASE_URL length: ${#DATABASE_URL}"
-          if [ -f primary_backend/.env ]; then
-            echo "primary_backend/.env:"
-            sed 's/=.*/=***MASKED***/' primary_backend/.env || true
-          else
-            echo "❌ primary_backend/.env does not exist yet"
-          fi
+      - name: migrate the Postgres database
+        working-directory: ./common
+        run: npx prisma migrate deploy
  
       - name: Run tests
         run: npm run test
