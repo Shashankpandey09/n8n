@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
@@ -24,7 +24,9 @@ jobs:
 
       - name: Create .env for primary_backend
         run: |
-          cat <<EOF > primary_backend/.env DATABASE_URL=${DATABASE_URL} ENCRYPTION_KEY=${ENCRYPTION_KEY} SECRET_KEY=${SECRET_KEY} EOF
+          echo "DATABASE_URL=${DATABASE_URL}" > primary_backend/.env
+          echo "ENCRYPTION_KEY=${ENCRYPTION_KEY}" >> primary_backend/.env
+          echo "SECRET_KEY=${SECRET_KEY}" >> primary_backend/.env
 
       - name: Install dependencies for primary_backend
         working-directory: ./primary_backend
@@ -32,7 +34,9 @@ jobs:
 
       - name: Create .env for Executor
         run: |
-          cat <<EOF > Executor/.env DATABASE_URL=${DATABASE_URL} ENCRYPTION_KEY=${ENCRYPTION_KEY} SECRET_KEY=${SECRET_KEY} EOF
+          echo "DATABASE_URL=${DATABASE_URL}" > Executor/.env
+          echo "ENCRYPTION_KEY=${ENCRYPTION_KEY}" >> Executor/.env
+          echo "SECRET_KEY=${SECRET_KEY}" >> Executor/.env
 
       - name: Install dependencies for Executor
         working-directory: ./Executor
