@@ -45,7 +45,7 @@ jobs:
      
       - name: migrate the Postgres database
         working-directory: ./common
-        run: npx prisma migrate reset
+        run: npm install && npx prisma migrate deploy
  
       - name: Run tests
         run: npm run test
