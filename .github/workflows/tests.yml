@@ -30,7 +30,7 @@ jobs:
         cat <<EOF > primary_backend/.env
         DATABASE_URL=${DATABASE_URL}
         ENCRYPTION_KEY=${ENCRYPTION_KEY}
-        JWT_SECRET=${JWT_SECRET}
+        SECRET_KEY =${SECRET_KEY}
         EOF
 
     - name: Install dependencies for primary_backend
@@ -43,7 +43,7 @@ jobs:
         cat <<EOF > Executor/.env
         DATABASE_URL=${DATABASE_URL}
         ENCRYPTION_KEY=${ENCRYPTION_KEY}
-        JWT_SECRET=${JWT_SECRET}
+         SECRET_KEY =${SECRET_KEY}
         EOF
 
     - name: Install dependencies for Executor
