@@ -16,15 +16,7 @@ jobs:
       DATABASE_URL: ${{ vars.DATABASE_URL }}
 
     steps:
-      - name: Debug DATABASE_URL + .env
-        run: |
-          echo "DATABASE_URL length: ${#DATABASE_URL}"
-          if [ -f primary_backend/.env ]; then
-            echo "primary_backend/.env:"
-            sed 's/=.*/=***MASKED***/' primary_backend/.env || true
-          else
-            echo "❌ primary_backend/.env does not exist yet"
-          fi
+     
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -50,6 +42,16 @@ jobs:
       - name: Install dependencies for Executor
         working-directory: ./Executor
         run: npm ci
-
+     
+      - name: Debug DATABASE_URL + .env
+        run: |
+          echo "DATABASE_URL length: ${#DATABASE_URL}"
+          if [ -f primary_backend/.env ]; then
+            echo "primary_backend/.env:"
+            sed 's/=.*/=***MASKED***/' primary_backend/.env || true
+          else
+            echo "❌ primary_backend/.env does not exist yet"
+          fi
+ 
       - name: Run tests
         run: npm run test
