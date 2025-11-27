@@ -39,7 +39,8 @@ echo "=== Running Executor unit tests ==="
 
 
 echo "=== Shutting down docker-compose stack ==="
-docker compose down
+docker compose -f docker-compose.test.yml down
+
 
 echo
 echo "✅ All tests finished successfully."
