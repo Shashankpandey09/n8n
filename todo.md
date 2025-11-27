@@ -7,4 +7,4 @@ steps ---------------->>
 <!-- create env file from those secrets at run time  -->
 
 ---------------------------------------------
-also try to install the node dotenv cli and see that the error goes out or not
+<!-- also try to install the node dotenv cli and see that the error goes out or not -->

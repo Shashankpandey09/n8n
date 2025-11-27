@@ -9,46 +9,34 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     env:
       SECRET_KEY: ${{ secrets.SECRET_KEY }}
       ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
       DATABASE_URL: ${{ vars.DATABASE_URL }}
-    
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Verify Docker Compose availability
-      run: docker compose version
+      - name: Verify Docker Compose availability
+        run: docker compose version
 
+      - name: Create .env for primary_backend
+        run: |
+          cat <<EOF > primary_backend/.env DATABASE_URL=${DATABASE_URL} ENCRYPTION_KEY=${ENCRYPTION_KEY} SECRET_KEY=${SECRET_KEY} EOF
 
+      - name: Install dependencies for primary_backend
+        working-directory: ./primary_backend
+        run: npm ci
 
-    - name: Create .env for primary_backend
-      run: |
-        cat <<EOF > primary_backend/.env
-        DATABASE_URL=${DATABASE_URL}
-        ENCRYPTION_KEY=${ENCRYPTION_KEY}
-        SECRET_KEY =${SECRET_KEY}
-        EOF
+      - name: Create .env for Executor
+        run: |
+          cat <<EOF > Executor/.env DATABASE_URL=${DATABASE_URL} ENCRYPTION_KEY=${ENCRYPTION_KEY} SECRET_KEY=${SECRET_KEY} EOF
 
-    - name: Install dependencies for primary_backend
-      working-directory: ./primary_backend
-      run: npm ci
+      - name: Install dependencies for Executor
+        working-directory: ./Executor
+        run: npm ci
 
-
-    - name: Create .env for Executor
-      run: |
-        cat <<EOF > Executor/.env
-        DATABASE_URL=${DATABASE_URL}
-        ENCRYPTION_KEY=${ENCRYPTION_KEY}
-         SECRET_KEY =${SECRET_KEY}
-        EOF
-
-    - name: Install dependencies for Executor
-      working-directory: ./Executor
-      run: npm ci
-
-    - name: Run tests
-      run: npm run test
+      - name: Run tests
+        run: npm run test

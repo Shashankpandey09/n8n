@@ -18,6 +18,7 @@ wait_for() {
   done
 }
 
+
 echo "=== Starting full docker-compose stack ==="
 docker compose -f docker-compose.test.yml up -d
 
