@@ -63,7 +63,7 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
    ```bash
    git clone [https://github.com/Shashankpandey09/n8n.git](https://github.com/Shashankpandey09/n8n.git)
    cd n8n
-2. **Start Infrastructure Spin up Postgres and Kafka using Docker**:
+2. **Start Infrastructure Spin up Postgres and Kafka and all the other services using Docker**:
 ```bash
 docker compose -f docker-compose.yml up -d
 ```
@@ -75,17 +75,10 @@ npm install
 ```bash
 cd common && npx prisma migrate deploy
 ```
-5.Start Services You can run the services individually:
+# Run Tests
+for running integration tests and unit tests together make sure you have started kafka and postgres locally 
+```bash
+npm run test
+```
 
-# Terminal 1: Primary Backend (API + Sweeper)
-```bash
-cd primary_backend && npm run dev
-```
-# Terminal 2: Worker Engine
-```bash
-cd Executor && npm run dev
-```
-# Terminal 3: Frontend
-```bash
-cd frontend && npm run dev
-```
+
