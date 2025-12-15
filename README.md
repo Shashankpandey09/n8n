@@ -1,7 +1,7 @@
 # Flowboard
 
 ![Flowboard UI]<img width="1901" height="898" alt="Screenshot 2025-12-15 223810" src="https://github.com/user-attachments/assets/afab31e7-8b48-4087-935e-a12d929c0131" />
-<img width="1898" height="897" alt="Screenshot 2025-12-15 223943" src="https://github.com/user-attachments/assets/afc5d119-9ee2-47fe-9835-d25dc29c0a3e" />
+
 
 
 
