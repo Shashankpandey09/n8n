@@ -1,8 +1,9 @@
 # Flowboard
 
-![Flowboard UI](./screenshots/landing-page.pn<img width="1901" height="898" alt="Screenshot 2025-12-15 223810" src="https://github.com/user-attachments/assets/afab31e7-8b48-4087-935e-a12d929c0131" />
-)
-*(Replace this path with your actual landing page screenshot)*
+![Flowboard UI](<img width="1901" height="898" alt="Screenshot 2025-12-15 223810" src="https://github.com/user-attachments/assets/afab31e7-8b48-4087-935e-a12d929c0131" />)
+<img width="1898" height="897" alt="Screenshot 2025-12-15 223943" src="https://github.com/user-attachments/assets/afc5d119-9ee2-47fe-9835-d25dc29c0a3e" />
+
+
 
 **Flowboard** is an open-source, event-driven workflow automation platform (similar to n8n) designed for high-throughput and reliability. It allows developers to build complex automation flows visually while maintaining the power of code-native execution.
 
@@ -24,8 +25,9 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 
 *Flowboard is engineered to decouple the API service from the heavy-lifting of workflow execution.*
 
-![Architecture Diagram](./screenshots/architecture-diagram.png)
-*(Take a screenshot of the diagram we created in your docs and place it here)*
+![Architecture Diagram](<img width="1791" height="820" alt="Screenshot 2025-12-15 224045" src="https://github.com/user-attachments/assets/8a46d5ad-4a27-490c-933b-9f0753ebec2e" />
+)
+
 
 ### How it works
 1.  **Ingestion:** The **Primary Backend** validates triggers (Webhooks) and persists the execution state to **PostgreSQL** with a `PENDING` status.
@@ -48,7 +50,7 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 
 ---
 
-## ⚡ Getting Started
+##  Getting Started
 
 ### Prerequisites
 - Node.js v18+
