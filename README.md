@@ -61,7 +61,7 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 
 1. **Clone the repository**
    ```bash
-   git clone [https://github.com/Shashankpandey09/n8n.git](https://github.com/Shashankpandey09/n8n.git)
+   git clone https://github.com/Shashankpandey09/n8n.git
    cd n8n
 2. **Start Infrastructure Spin up Postgres and Kafka and all the other services using Docker**:
 ```bash
