@@ -1,6 +1,6 @@
 # Flowboard
 
-![Flowboard UI](<img width="1901" height="898" alt="Screenshot 2025-12-15 223810" src="https://github.com/user-attachments/assets/afab31e7-8b48-4087-935e-a12d929c0131" />)
+![Flowboard UI]<img width="1901" height="898" alt="Screenshot 2025-12-15 223810" src="https://github.com/user-attachments/assets/afab31e7-8b48-4087-935e-a12d929c0131" />
 <img width="1898" height="897" alt="Screenshot 2025-12-15 223943" src="https://github.com/user-attachments/assets/afc5d119-9ee2-47fe-9835-d25dc29c0a3e" />
 
 
@@ -25,8 +25,9 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 
 *Flowboard is engineered to decouple the API service from the heavy-lifting of workflow execution.*
 
-![Architecture Diagram](<img width="1791" height="820" alt="Screenshot 2025-12-15 224045" src="https://github.com/user-attachments/assets/8a46d5ad-4a27-490c-933b-9f0753ebec2e" />
-)
+![Architecture Diagram]
+<img width="1791" height="820" alt="Screenshot 2025-12-15 224045" src="https://github.com/user-attachments/assets/8a46d5ad-4a27-490c-933b-9f0753ebec2e" />
+
 
 
 ### How it works
@@ -63,10 +64,11 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
    git clone [https://github.com/Shashankpandey09/n8n.git](https://github.com/Shashankpandey09/n8n.git)
    cd n8n
 2.Start Infrastructure Spin up Postgres and Kafka using Docker:
-
+```bash
 docker compose -f docker-compose.yml up -d
 
 3.Install Dependencies
+```bash
 npm install
 
 4.Run Database Migrations
