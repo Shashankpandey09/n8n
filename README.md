@@ -1,6 +1,7 @@
 # Flowboard
 
-![Flowboard UI](./screenshots/landing-page.png)
+![Flowboard UI](./screenshots/landing-page.pn<img width="1901" height="898" alt="Screenshot 2025-12-15 223810" src="https://github.com/user-attachments/assets/afab31e7-8b48-4087-935e-a12d929c0131" />
+)
 *(Replace this path with your actual landing page screenshot)*
 
 **Flowboard** is an open-source, event-driven workflow automation platform (similar to n8n) designed for high-throughput and reliability. It allows developers to build complex automation flows visually while maintaining the power of code-native execution.
@@ -59,3 +60,24 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
    ```bash
    git clone [https://github.com/Shashankpandey09/n8n.git](https://github.com/Shashankpandey09/n8n.git)
    cd n8n
+2.Start Infrastructure Spin up Postgres and Kafka using Docker:
+
+docker compose -f docker-compose.yml up -d
+
+3.Install Dependencies
+npm install
+
+4.Run Database Migrations
+
+cd common && npx prisma migrate deploy
+
+5.Start Services You can run the services individually:
+
+# Terminal 1: Primary Backend (API + Sweeper)
+cd primary_backend && npm run dev
+
+# Terminal 2: Worker Engine
+cd Executor && npm run dev
+
+# Terminal 3: Frontend
+cd frontend && npm run dev
