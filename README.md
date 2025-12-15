@@ -16,7 +16,6 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 - **Visual Workflow Builder:** Drag-and-drop interface (ReactFlow) to chain nodes and define logic.
 - **Event-Driven Architecture:** Decoupled ingestion and execution using Kafka to handle load spikes.
 - **Reliable Delivery (Transactional Outbox):** A dedicated **Sweeper Service** guarantees *at-least-once* message delivery. No trigger is ever lost, even if the message broker is down.
-- **Sandboxed Execution:** User-defined code nodes run in isolated Node.js VM contexts to ensure security and stability.
 - **Real-time Feedback:** WebSocket integration for live execution logs and status updates.
 
 ---
@@ -25,7 +24,7 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 
 *Flowboard is engineered to decouple the API service from the heavy-lifting of workflow execution.*
 
-![Architecture Diagram]
+
 <img width="1791" height="820" alt="Screenshot 2025-12-15 224045" src="https://github.com/user-attachments/assets/8a46d5ad-4a27-490c-933b-9f0753ebec2e" />
 
 
@@ -34,7 +33,7 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 1.  **Ingestion:** The **Primary Backend** validates triggers (Webhooks) and persists the execution state to **PostgreSQL** with a `PENDING` status.
 2.  **Transactional Outbox (Sweeper):** A standalone **Sweeper Service** runs on a tight loop. It polls the database for `PENDING` executions and pushes them to **Kafka**. This ensures atomic reliability—we don't rely on "dual writes" to both DB and Queue.
 3.  **Execution Engine:** **Worker Nodes** consume messages from Kafka, fetch the workflow graph, and execute nodes sequentially.
-4.  **Isolation:** JavaScript code blocks are executed inside a secure VM sandbox to prevent a single malicious workflow from crashing the worker process.
+
 
 ---
 
@@ -52,6 +51,7 @@ Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
 ---
 
 ##  Getting Started
+
 
 ### Prerequisites
 - Node.js v18+
