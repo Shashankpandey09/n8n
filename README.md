@@ -1,0 +1,84 @@
+# Flowboard
+
+<img width="1901" height="898" alt="Screenshot 2025-12-15 223810" src="https://github.com/user-attachments/assets/afab31e7-8b48-4087-935e-a12d929c0131" />
+
+
+
+
+**Flowboard** is an open-source, event-driven workflow automation platform (similar to n8n) designed for high-throughput and reliability. It allows developers to build complex automation flows visually while maintaining the power of code-native execution.
+
+Built with **React**, **Node.js**, **Apache Kafka**, and **PostgreSQL**.
+
+---
+
+## 🚀 Key Features
+
+- **Visual Workflow Builder:** Drag-and-drop interface (ReactFlow) to chain nodes and define logic.
+- **Event-Driven Architecture:** Decoupled ingestion and execution using Kafka to handle load spikes.
+- **Reliable Delivery (Transactional Outbox):** A dedicated **Sweeper Service** guarantees *at-least-once* message delivery. No trigger is ever lost, even if the message broker is down.
+- **Real-time Feedback:** WebSocket integration for live execution logs and status updates.
+
+---
+
+## 🏗️ System Architecture
+
+*Flowboard is engineered to decouple the API service from the heavy-lifting of workflow execution.*
+
+
+<img width="1791" height="820" alt="Screenshot 2025-12-15 224045" src="https://github.com/user-attachments/assets/8a46d5ad-4a27-490c-933b-9f0753ebec2e" />
+
+
+
+### How it works
+1.  **Ingestion:** The **Primary Backend** validates triggers (Webhooks) and persists the execution state to **PostgreSQL** with a `PENDING` status.
+2.  **Transactional Outbox (Sweeper):** A standalone **Sweeper Service** runs on a tight loop. It polls the database for `PENDING` executions and pushes them to **Kafka**. This ensures atomic reliability—we don't rely on "dual writes" to both DB and Queue.
+3.  **Execution Engine:** **Worker Nodes** consume messages from Kafka, fetch the workflow graph, and execute nodes sequentially.
+
+
+---
+
+## 🛠️ Technology Stack
+
+| Component | Tech | Reason |
+| :--- | :--- | :--- |
+| **Frontend** | React, Tailwind, ReactFlow | For a high-performance, interactive node editor. |
+| **Backend API** | Node.js, Express | Non-blocking I/O ideal for handling concurrent webhooks. |
+| **Sweeper Service** | Node.js Poller | Ensures data consistency between Postgres and Kafka. |
+| **Message Queue** | Apache Kafka | Durable buffering between the API and Workers. |
+| **Database** | PostgreSQL + Prisma | Relational data integrity for complex workflow structures. |
+| **Infra/Testing** | Docker, Bash | Containerized development and ephemeral test environments. |
+
+---
+
+##  Getting Started
+
+
+### Prerequisites
+- Node.js v18+
+- Docker & Docker Compose
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/Shashankpandey09/n8n.git
+   cd n8n
+2. **Start Infrastructure Spin up Postgres and Kafka and all the other services using Docker**:
+```bash
+docker compose -f docker-compose.yml up -d
+```
+3.Install Dependencies
+```bash
+npm install
+```
+4.Run Database Migrations
+```bash
+cd common && npx prisma migrate deploy
+```
+# Run Tests
+for running integration tests and unit tests together make sure you have started kafka and postgres locally 
+```bash
+npm run test
+```
+
+
