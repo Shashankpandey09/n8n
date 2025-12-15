@@ -10,6 +10,9 @@ import WorkflowEditor from "./pages/WorkflowEditor";
 import NotFound from "./pages/NotFound";
 import CredentialsPage from "./pages/Credentials";
 import Protected from "./pages/Protected";
+import FlowboardLanding from "./pages/LandingPage";
+import ExecutionsPage from "./pages/ExecutionsPage";
+import FlowboardDocs from "./pages/Docs";
 
 const queryClient = new QueryClient();
 
@@ -20,14 +23,18 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Auth />} />
+          <Route path="/" element={<FlowboardLanding />} />
+          <Route path="/Auth" element={<Auth />} />
           <Route element={<Protected/>}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/workflow/:workflowId" element={<WorkflowEditor />} />
             <Route path="/credential" element={<CredentialsPage />} />
+             <Route path="/executions" element={<ExecutionsPage/>} />
           </Route>
+             <Route path="/Docs" element={<FlowboardDocs/>}/>
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
+       
         </Routes>
       </BrowserRouter>
     </TooltipProvider>

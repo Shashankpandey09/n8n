@@ -49,7 +49,7 @@ async function main() {
              console.error("Error processing outbox:", error);
         }
         
-      // back offing a bit longer on failure
+     //on failure
       await new Promise((r) => setTimeout(r, 5000));
     }
   }

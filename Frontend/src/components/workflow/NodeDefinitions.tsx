@@ -13,18 +13,18 @@ const nodeDefinitions = [
       
     ] 
   },
-  { 
-    type: 'telegram', 
-    category: 'Action', 
-    icon: Send,
-    label: "Telegram",
-    description: "Send a message",
-    parameters: [
-      { name: 'chatId', label: 'Chat ID', type: 'string', required: true, placeholder: '@username or chat_id' },
-      { name: 'text', label: 'Message Text', type: 'string', required: true, placeholder: 'Your message...' }
-    ], 
-    credentials: [{ name:'telegram', required:true,InputFields:null }] 
-  },
+  // { 
+  //   type: 'telegram', 
+  //   category: 'Action', 
+  //   icon: Send,
+  //   label: "Telegram",
+  //   description: "Send a message",
+  //   parameters: [
+  //     { name: 'chatId', label: 'Chat ID', type: 'string', required: true, placeholder: '@username or chat_id' },
+  //     { name: 'text', label: 'Message Text', type: 'string', required: true, placeholder: 'Your message...' }
+  //   ], 
+  //   credentials: [{ name:'telegram', required:true,InputFields:null }] 
+  // },
   { 
     type: 'smtp', 
     category: 'Action', 
@@ -44,23 +44,7 @@ const nodeDefinitions = [
       type:'password'
     }] }] 
   },
-  //    { 
-  //   type: 'smtp', 
-  //   category: 'Action', 
-  //   icon: Send,
-  //   label: "SMTP",
-  //   description: "",
-  //   parameters: [
-  //     { name: 'to', label: 'To', type: 'string', required: true, placeholder: 'recipient@example.com' },
-  //     { name: 'subject', label: 'Subject', type: 'string', required: false, default: '' },
-  //     { name: 'body', label: 'Body', type: 'string', required: true },
-  //   ], 
-  //   credentials: [{ name:'smtp', required:true ,InputFields:[{
-  //     name:'EMAIL_USER'
-  //   },{
-  //     name:'EMAIL_PASS'
-  //   }] }] 
-  // },
+ 
   { 
     type: 'discord', 
     category: 'Action',
@@ -72,17 +56,40 @@ const nodeDefinitions = [
       { name: 'message', label: 'Message', type: 'string', required: true, placeholder: 'Your message text' }
     ]
   },
-  { 
-    type: 'http', 
-    category: 'Action', 
-    icon: Zap, 
-    label: "HTTP Request", 
-    description: "Make API call",
-    parameters: [
-      { name: 'url', label: 'URL', type: 'string', required: true, placeholder: 'https://api.example.com' },
-      { name: 'httpMethod', label: 'Method', type: 'string', default: 'GET', required: true }
-    ]
-  },
+// {
+//   type: 'http',
+//   category: 'Action',
+//   icon: Zap,
+//   label: "HTTP Request",
+//   description: "Make API call",
+
+//   parameters: [
+//     { 
+//       name: 'url', 
+//       label: 'URL', 
+//       type: 'string', 
+//       required: true, 
+//       placeholder: 'https://api.example.com' 
+//     },
+
+//     { 
+//       name: 'httpMethod', 
+//       label: 'Method', 
+//       type: 'string', 
+//       default: 'GET', 
+//       required: true 
+//     },
+
+//     { 
+//       name: 'payload',
+//       label: 'JSON Payload',
+//       type: 'textarea',           
+//       required: false,
+//       placeholder: '{ "key": "value" }'
+//     }
+//   ]
+// }
+
   // { 
   //   type: "database",
   //   category: 'Action',

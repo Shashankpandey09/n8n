@@ -29,6 +29,8 @@ import { useWebhook } from "@/store/Webhook";
 import { useCredStore } from "@/store/CredStore";
 import WorkflowNavbar from "@/components/workflow/WorkflowNavbar";
 import { Trash2 } from "lucide-react";
+import { icons, styles } from "@/components/executionPage/StatusBadge";
+import { useExecutionStore } from "@/store/useExecutionStore";
 
 type WFNodeData = {
   label?: string;
@@ -45,8 +47,23 @@ const BaseNode = ({
   data: WFNodeData;
   isTrigger: boolean;
 }) => {
+  const { fetchExecutionTaskStatus, isTestActive, ExecutedNodes, ExecutionId } =
+    useExecutionStore((s) => s);
+  useEffect(() => {
+    let intervalID: NodeJS.Timeout | null = null;
+    if (isTestActive) {
+      intervalID = setInterval(() => {
+        fetchExecutionTaskStatus(ExecutionId);
+      }, 2000);
+      return () => {
+        if (intervalID) {
+          clearInterval(intervalID);
+        }
+      };
+    }
+  }, [isTestActive]);
   const label = data.label || data.type || "Node";
-
+  const nodeStatus = ExecutedNodes.find((c) => c.nodeId === id)?.status;
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     window.dispatchEvent(
@@ -56,10 +73,11 @@ const BaseNode = ({
 
   return (
     <div className="group relative  border-[#111827] bg-[#020817] ">
-      <div className="rounded-2xl relative shadow-sm px-4 py-2">
-        <div className=" text-center">
-          <span className="text-sm font-medium text-[#e5e7eb] capitalize">
+      <div className="rounded-2xl  relative shadow-sm px-4 py-2">
+        <div className=" text-center  ">
+          <span className="text-sm flex justify-around items-center font-medium text-[#e5e7eb] capitalize">
             {label}
+            <span  className={`${styles[nodeStatus]} bg-inherit`}>{icons[nodeStatus]}</span>
           </span>
         </div>
         <button
@@ -121,6 +139,9 @@ const WorkflowEditor = () => {
   const [workflowTitle, setWorkflowTitle] = useState("New Workflow");
   const savedCredentials = useCredStore((s) => s.credentialsMetaData);
   const { setListening, setPolling } = useWebhook((s) => s);
+  const fetchExecutionTaskStatus = useExecutionStore(
+    (s) => s.fetchExecutionTaskStatus
+  );
 
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
@@ -151,7 +172,6 @@ const WorkflowEditor = () => {
     console.log("edges state updated:", edges);
   }, [edges]);
 
-  // helper to save with explicit nodes/edges (avoids race)
   const saveWith = useCallback(
     async (nextNodes: Node[], nextEdges: Edge[]) => {
       await handleSave(
@@ -257,7 +277,7 @@ const WorkflowEditor = () => {
   ) => {
     const newNode: Node = {
       id: `${Date.now()}`,
-   
+
       type: ActionType === "Trigger" ? "input" : "default",
       position: { x: Math.random() * 400, y: Math.random() * 400 },
       data: {
@@ -283,7 +303,6 @@ const WorkflowEditor = () => {
     }
   }, [selectedNode, selectedEdge, handleNodesDelete, handleEdgesDelete]);
 
- 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Delete") {
@@ -330,7 +349,6 @@ const WorkflowEditor = () => {
         triggerPayload,
         {
           headers: {
-           
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
         }
@@ -338,6 +356,7 @@ const WorkflowEditor = () => {
 
       if (res.status === 200) {
         toast.info("Executing workflow");
+        fetchExecutionTaskStatus(res.data.executionId);
       } else {
         toast.error(`Unexpected status: ${res.status}`);
       }

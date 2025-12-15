@@ -27,7 +27,7 @@ WorkFlowRouter.post(
       const body = req?.body;
       const result = await createWorkflow(userId, body);
 
-      // If your service returns structured responses with ok: true/false
+      //  service returns structured responses with ok: true/false
       if (result.ok === false) {
         return res.status(400).json(result); // bad request due to validation issues
       }
@@ -47,7 +47,7 @@ WorkFlowRouter.put(
   Authenticate,
   async (req: ExtendedReq, res: Response) => {
     try {
-      // parse and validate params
+      // parsing and validate params
       const workflowId = Number(req.params.workflowId);
       if (!Number.isInteger(workflowId) || workflowId <= 0) {
         return res.status(400).json({
@@ -68,16 +68,16 @@ WorkFlowRouter.put(
           .json({ ok: false, message: "workflow payload is required" });
       }
 
-      const { nodes, connections } = req.body.workflow;
+      const { nodes, connections, title } = req.body.workflow;
 
-      // validate workflow payload shape first (use zod/joi if possible)
-      // call your validate function
+      // validate workflow payload shape first
+
       const normalized = validate(nodes, connections);
       if (!normalized) {
         return res.status(400).json({ ok: false, message: "Invalid workflow" });
       }
 
-      // structural errors -> return 400 early with details
+      // structural errors
       const structuralErr = normalized.err.filter((e: any) =>
         structuralTypes.has(e.type)
       );
@@ -100,11 +100,12 @@ WorkFlowRouter.put(
       }
 
       const WORKFLOW = await prisma.workflow.update({
-        where: { id: workflowId }, 
+        where: { id: workflowId },
         data: {
           nodes: normalized.nodes,
           connections: normalized.connections,
           enabled: Boolean(normalized.valid),
+          title: title,
         },
       });
 
@@ -150,7 +151,9 @@ WorkFlowRouter.delete(
     try {
       const workflowId = Number(req.params.workflowId);
       if (!Number.isInteger(workflowId) || workflowId <= 0) {
-        return res.status(400).json({ ok: false, message: "Invalid workflowId" });
+        return res
+          .status(400)
+          .json({ ok: false, message: "Invalid workflowId" });
       }
 
       const userId = Number(req.userId);
@@ -169,26 +172,126 @@ WorkFlowRouter.delete(
           .status(404)
           .json({ ok: false, message: "Workflow not found or not accessible" });
       }
-       await prisma.$transaction(async(ctx)=>{
-      await ctx.workflow.delete({
-        where: { id: workflowId },
+      await prisma.$transaction(async (ctx) => {
+        await ctx.workflow.delete({
+          where: { id: workflowId },
+        });
+        await ctx.emailWait.deleteMany({
+          where: {
+            workflowId: workflowId,
+          },
+        });
       });
-      await ctx.emailWait.deleteMany({
-        where:{
-          workflowId:workflowId
-        }
-      })
-       })
-     
 
-      return res
-        .status(200)
-        .json({ ok: true, message: "Successfully deleted", title: existing.title });
+      return res.status(200).json({
+        ok: true,
+        message: "Successfully deleted",
+        title: existing.title,
+      });
     } catch (err) {
       console.error("Error deleting workflow:", err);
       return res
         .status(500)
-        .json({ ok: false, message: "Internal server error", error: err});
+        .json({ ok: false, message: "Internal server error", error: err });
+    }
+  }
+);
+//getting all the workflows from the backend
+WorkFlowRouter.get(
+  "/",
+  Authenticate,
+  async (req: ExtendedReq, res: Response) => {
+    try {
+      const userId = req.userId;
+      const workflows = await prisma.workflow.findMany({
+        where: {
+          userId: userId,
+        },
+      });
+      return res.json({ workflows, ok: true });
+    } catch (error) {
+      console.error("Error Fetching workflow:", error);
+      return res
+        .status(500)
+        .json({ ok: false, message: "Internal server error", error });
+    }
+  }
+);
+
+//getting all the executions
+WorkFlowRouter.get(
+  "/executions",
+  Authenticate,
+  async (req: ExtendedReq, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ ok: false, message: "Unauthorized: no userId" });
+      }
+      const executions = await prisma.execution.findMany({
+        where: {
+          workflow: { userId: userId },
+        },
+        select: {
+          workflow: { select: { title: true, id: true } },
+          status: true,
+          tasks: {
+            take: 10,
+            orderBy: { finishedAt: "desc" },
+          },
+          id: true,
+          createdAt: true,
+        },
+        take: 10,
+        orderBy: { createdAt: "desc" },
+      });
+      return res.json({ ok: true, executions }).status(200);
+    } catch (error) {
+      console.log("error while fetching executions " + error);
+      return res
+        .json({ ok: false, error: "error while fetching executions" })
+        .status(500);
+    }
+  }
+);
+//getting all the execution tasks per workflow mapped to the executionId
+WorkFlowRouter.get(
+  "/executionTask/:executionId",
+  Authenticate,
+  async (req: ExtendedReq, res: Response) => {
+    try {
+      const userId = req.userId;
+      if (!userId) {
+        return res
+          .status(401)
+          .json({ ok: false, message: "Unauthorized: no userId" });
+      }
+      const executionId = req.params.executionId;
+      const executedNodes = await prisma.executionTask.findMany({
+        where: {
+          executionId: Number(executionId),
+          execution: { workflow: { userId: userId } },
+        },
+        select: {
+          nodeId: true,
+          status: true,
+          execution: {
+            select: {
+              status: true,
+            },
+          },
+        },
+      });
+      return res.json({ executedNodes }).status(200);
+    } catch (error) {
+      console.log(
+        "error while fetching executed nodes status per Execution" + error
+      );
+      return res.status(500).json({
+        error: "error while fetching executed nodes status per Execution",
+      });
     }
   }
 );

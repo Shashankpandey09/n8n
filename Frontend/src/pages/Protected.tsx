@@ -10,7 +10,7 @@ get()
   },[])
   const token=localStorage.getItem('token')
   if (!token) {
-    return <Navigate to="/signin" replace />;
+    return <Navigate to="/Auth" replace />;
   }
 
   return <Outlet />; // renders nested routes (protected pages)

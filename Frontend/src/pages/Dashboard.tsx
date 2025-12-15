@@ -8,7 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Plus, Play, Trash2, Settings } from "lucide-react";
+import { Plus, Play, Trash2, Settings, Workflow as WorkflowIcon, ArrowRight, Calendar, Layers } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import Navbar from "@/components/ui/Navbar";
@@ -46,8 +46,6 @@ const Dashboard = () => {
     const currentUser = JSON.parse(
       localStorage.getItem("currentUser") || "null"
     );
-    //create a workflow in the backend
-    //need to send the tokens also
     try {
       const newWorkflow = {
         userId: currentUser.id,
@@ -73,7 +71,6 @@ const Dashboard = () => {
       const allWorkflows = JSON.parse(
         localStorage.getItem("workflows") || "[]"
       );
-      //push res.data.workflows
       allWorkflows.push(result.workflow);
       localStorage.setItem("workflows", JSON.stringify(allWorkflows));
 
@@ -106,111 +103,130 @@ const Dashboard = () => {
       }
     } catch (error) {
       console.log(error);
-
       toast.error("error occurred");
     }
   };
 
   return (
-    <div className="min-h-screen bg-[#050b11] text-[#e6eef6]">
-      <Navbar />
+    <div className="min-h-screen bg-[#0B1121] text-slate-300 font-sans selection:bg-sky-500/30 relative overflow-x-hidden">
+      
+     
+      <div className="fixed inset-0 pointer-events-none z-0">
 
-      <main className="mx-auto max-w-6xl px-6 py-8">
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="text-2xl font-semibold text-[#e6eef6]">Workflows</h2>
-            <p className="text-xs text-[#9aa3ad]">
-              Build and manage your automation workflows
-            </p>
-          </div>
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-[radial-gradient(ellipse_at_top,#1e3a8a30,transparent_70%)]"></div>
+      </div>
 
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleCreateWorkflow}
-              className="flex items-center gap-2 h-9 px-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white shadow-sm"
-            >
-              <Plus className="h-4 w-4" />
-              <span className="text-sm">New Workflow</span>
-            </Button>
-          </div>
-        </div>
+    
+      <div className="relative z-10">
+        <Navbar />
 
-        {workflows.length === 0 ? (
-          <Card className="border border-[#1f2933] bg-[#0b1017] shadow-none">
-            <CardContent className="flex flex-col items-center justify-center py-10">
-              <p className="mb-4 text-sm text-[#9aa3ad]">
-                No workflows yet. Create your first automation.
+        <main className="mx-auto max-w-7xl px-6 py-12">
+  
+          <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-white/5 pb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Workflows</h2>
+              <p className="text-slate-400">
+                Manage your automation pipelines.
               </p>
+            </div>
+
+            <div className="flex items-center gap-3">
               <Button
                 onClick={handleCreateWorkflow}
-                className="flex items-center gap-2 h-9 px-3 rounded-full bg-[#2563eb] hover:bg-[#1d4ed8] text-white"
+                className="h-10 px-6 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-all shadow-[0_0_20px_-5px_rgba(2,132,199,0.5)] flex items-center gap-2 group border border-sky-400/20"
               >
-                <Plus className="h-4 w-4" />
-                <span className="text-sm">Create workflow</span>
+                <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
+                <span>New Workflow</span>
               </Button>
-            </CardContent>
-          </Card>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {workflows.map((workflow) => (
-              <Card
-                key={workflow.id}
-                className="bg-[#0b1017] border border-[#1f2933] hover:border-[#2563eb] hover:shadow-[0_0_0_1px_rgba(37,99,235,0.4)] transition-all"
-              >
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-sm font-medium text-[#e6eef6]">
-                        {workflow.title}
-                      </CardTitle>
-                      <CardDescription className="text-xs text-[#9aa3ad]">
-                        {workflow.nodes.length} node
-                        {workflow.nodes.length === 1 ? "" : "s"}
-                      </CardDescription>
-                    </div>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => navigate(`/workflow/${workflow.id}`)}
-                        aria-label={`Open ${workflow.title}`}
-                        className="h-7 w-7 rounded-full hover:bg-[#111827]"
-                      >
-                        <Settings className="h-3.5 w-3.5 text-[#9aa3ad]" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDeleteWorkflow(workflow.id)}
-                        aria-label={`Delete ${workflow.title}`}
-                        className="h-7 w-7 rounded-full hover:bg-[#111827]"
-                      >
-                        <Trash2 className="h-3.5 w-3.5 text-red-400 hover:text-red-500" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-0">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] text-[#6b7280]">
-                      {new Date(workflow.createdAt).toLocaleDateString()}
-                    </span>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => toast.info("Execution coming soon")}
-                      className="h-7 px-3 rounded-full border-[#1f2933] bg-transparent text-xs text-[#e6eef6] hover:bg-[#111827]"
-                    >
-                      <Play className="mr-1 h-3 w-3" />
-                      Run
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+            </div>
           </div>
-        )}
-      </main>
+
+   
+          {workflows.length === 0 ? (
+        
+            <div className="relative rounded-2xl border border-dashed border-white/10 bg-[#1e293b]/10 p-12 text-center">
+               <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                  <WorkflowIcon className="h-6 w-6 text-slate-400" />
+               </div>
+               <h3 className="mb-2 text-lg font-semibold text-white">No workflows yet</h3>
+               <p className="mb-8 text-slate-500 max-w-sm mx-auto text-sm">
+                 Create your first automation workflow to get started.
+               </p>
+               <Button
+                onClick={handleCreateWorkflow}
+                variant="outline"
+                className="mx-auto h-9 px-4 rounded-lg bg-transparent hover:bg-white/5 text-slate-300 border-white/10 hover:text-white transition-all text-sm"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                <span>Create Workflow</span>
+              </Button>
+            </div>
+          ) : (
+            
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {workflows.map((workflow) => (
+                <Card
+                  key={workflow.id}
+                  className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/5 bg-[#1e293b]/20 backdrop-blur-sm transition-all duration-300 hover:border-sky-500/30 hover:bg-[#1e293b]/40 hover:shadow-xl hover:shadow-sky-900/10"
+                >
+                  <CardHeader className="pb-2">
+                    <div className="flex items-start justify-between">
+                      <div className="space-y-2">
+                  
+                        <CardTitle className="text-base font-semibold text-white group-hover:text-sky-100 transition-colors">
+                          {workflow.title}
+                        </CardTitle>
+                        
+             
+                        <div className="flex flex-wrap gap-2 text-[11px] font-medium text-slate-500">
+                           <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                              <Layers className="h-3 w-3" />
+                              <span>{workflow.nodes.length} nodes</span>
+                           </div>
+                           <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                              <Calendar className="h-3 w-3" />
+                              <span>{new Date(workflow.createdAt).toLocaleDateString()}</span>
+                           </div>
+                        </div>
+                      </div>
+                 
+                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                         <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/workflow/${workflow.id}`); }}
+                          className="h-7 w-7 rounded-md text-slate-500 hover:bg-white/5 hover:text-sky-400"
+                        >
+                          <Settings className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteWorkflow(workflow.id); }}
+                          className="h-7 w-7 rounded-md text-slate-500 hover:bg-red-500/10 hover:text-red-400"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="pt-4">
+               
+                      <Button
+                        onClick={() => navigate(`/workflow/${workflow.id}`)}
+                        className="w-full h-9 rounded-lg bg-white/5 hover:bg-sky-600 hover:text-white text-xs font-medium text-slate-300 border border-white/5 hover:border-sky-500/50 transition-all flex items-center justify-between group/btn"
+                      >
+                        <span className="pl-1">Open Editor</span>
+                        <ArrowRight className="h-3.5 w-3.5 opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+                      </Button>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   );
 };

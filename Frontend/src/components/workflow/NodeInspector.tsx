@@ -1,7 +1,7 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, ChevronDown, Activity, Key, Settings } from "lucide-react";
 import nodeDefinitions from "./NodeDefinitions";
 import { toast } from "sonner";
 import { useCredStore } from "@/store/CredStore";
@@ -61,10 +61,13 @@ const NodeInspector = ({
     : [String(nodeDefinition?.description ?? "")];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#050b11] text-[#e6eef6]">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#020817] text-[#e6eef6] animate-in fade-in zoom-in-95 duration-200">
       {/* Top bar */}
-      <header className="flex items-center justify-between px-6 py-3 border-b border-[#1f2933] bg-[#050b11]">
-        <h2 className="text-sm font-semibold tracking-wide">Node Settings</h2>
+      <header className="flex h-14 items-center justify-between px-6 border-b border-[#1e293b] bg-[#020817]">
+        <div className="flex items-center gap-2">
+          <Settings className="w-4 h-4 text-[#94a3b8]" />
+          <h2 className="text-sm font-semibold tracking-wide text-[#e6eef6]">Node Configuration</h2>
+        </div>
 
         <div className="flex items-center gap-3">
           {nodeDefinition?.type !== "webhook" && (
@@ -76,28 +79,23 @@ const NodeInspector = ({
             aria-label="Close"
             title="Close"
             className="
-              h-9 w-9 rounded-full
-              bg-[#0b1017]
-              border border-[#1f2933]
-              text-[#fca5a5]
-              shadow-sm
-              hover:bg-[#111827]
-              hover:border-[#f87171]
-              hover:text-[#fecaca]
-              active:scale-95
-              transition-all duration-150
+              h-8 w-8 rounded-full
+              bg-transparent
+              text-red-500
+              hover:bg-[#1e293b]
+              hover:text-red-500
+              transition-colors duration-200
             "
             variant="ghost"
           >
-            <X className="h-4 w-4" />
+            <X className="h-6 w-6" />
           </Button>
         </div>
       </header>
 
-      {/* 3-column content area – width ratios kept exactly */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left: 0.33 */}
-        <div className="flex-[0.33] min-w-[260px] h-full overflow-hidden bg-[#0b1017]">
+       
+        <div className="flex-[0.3] min-w-[300px] h-full overflow-hidden bg-[#020617] border-r border-[#1e293b]">
           <LeftPanel
             nodeDefinition={nodeDefinition}
             nodeId={node.id}
@@ -105,76 +103,103 @@ const NodeInspector = ({
           />
         </div>
 
-        {/* Center: 0.34 */}
-        <div className="flex-[0.34] min-w-[360px] h-full overflow-y-auto px-6 py-4 bg-[#050b11]">
-          <Card className="border-0 shadow-none bg-transparent">
-            <CardContent className="space-y-4 px-0">
-              <div className="space-y-2">
-                <label
-                  htmlFor="nodeLabel"
-                  className="block text-sm font-medium text-[#e6eef6]"
-                >
-                  Action
-                </label>
-                <select
-                  id="nodeLabel"
-                  className="mt-1 block w-full rounded-md border border-[#1f2933] bg-[#111827] py-2 pl-3 pr-10 text-sm shadow-sm text-[#e6eef6] placeholder:text-[#6b7280] focus:border-[#2563eb] focus:outline-none focus:ring-1 focus:ring-[#2563eb]"
-                  value={actionValue}
-                  onChange={(e) =>
-                    onUpdate({
-                      ...node,
-                      data: { ...node.data, description: e.target.value },
-                    })
-                  }
-                >
-                  {actionOptions.map((opt) => (
-                    <option
-                      key={opt}
-                      value={opt}
-                      className="bg-[#050b11] text-[#e6eef6]"
+        <div className="flex-[0.4] min-w-[400px] h-full overflow-y-auto bg-[#020817] relative">
+          <div className="absolute inset-0 px-8 py-8">
+            <Card className="border-none shadow-none bg-transparent">
+              <CardContent className="space-y-8 px-0 py-0">
+                
+    
+                <div className="space-y-3">
+                  <label
+                    htmlFor="nodeLabel"
+                    className="text-xs font-semibold uppercase tracking-wider text-[#64748b] pl-1"
+                  >
+                    Action
+                  </label>
+                  <div className="relative group">
+                    <select
+                      id="nodeLabel"
+                      className="
+                        w-full appearance-none rounded-xl
+                        bg-[#0f172a] border border-[#1e293b]
+                        py-3 pl-4 pr-10 text-sm text-[#e6eef6]
+                        shadow-sm transition-all duration-200
+                        hover:border-[#3b82f6]/50
+                        focus:border-[#3b82f6] focus:bg-[#0f172a] focus:ring-4 focus:ring-[#3b82f6]/10 focus:outline-none
+                      "
+                      value={actionValue}
+                      onChange={(e) =>
+                        onUpdate({
+                          ...node,
+                          data: { ...node.data, description: e.target.value },
+                        })
+                      }
                     >
-                      {opt}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Parameters */}
-              <div className="pt-4 border-t border-[#1f2933]">
-                <div className="flex items-center justify-between mb-3">
-                  <h3 className="text-sm font-medium">Parameters</h3>
+                      {actionOptions.map((opt) => (
+                        <option
+                          key={opt}
+                          value={opt}
+                          className="bg-[#0f172a] text-[#e6eef6]"
+                        >
+                          {opt}
+                        </option>
+                      ))}
+                    </select>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-[#64748b] group-hover:text-[#94a3b8] transition-colors">
+                      <ChevronDown className="h-4 w-4" />
+                    </div>
+                  </div>
                 </div>
 
-                <ParametersPanel
-                  node={node}
-                  nodeDefinition={nodeDefinition}
-                  onUpdate={onUpdate}
-                />
-              </div>
+           
+                <div className="space-y-4 pt-4 border-t border-[#1e293b]">
+                  <div className="flex items-center gap-2 pb-1">
+                    <Activity className="w-4 h-4 text-[#94a3b8]" />
+                    <h3 className="text-sm font-medium text-[#e6eef6]">Parameters</h3>
+                  </div>
 
-              {/* Webhook extra UI */}
-              {nodeDefinition?.type === "webhook" && <WebhookPanel path={path} />}
-
-              {/* Credentials */}
-              {nodeDefinition?.credentials &&
-                nodeDefinition.credentials.length > 0 && (
-                  <div className="pt-4 border-t border-[#1f2933]">
-                    <h3 className="text-sm font-medium mb-3">Credentials</h3>
-                    <CredentialsPanel
+                  <div className="bg-[#020617] rounded-xl border border-[#1e293b] p-1">
+                    <ParametersPanel
                       node={node}
                       nodeDefinition={nodeDefinition}
-                      CreateCredentials={CreateCredentials}
-                      StoredCred={StoredCred}
                       onUpdate={onUpdate}
                     />
                   </div>
+                </div>
+
+                {nodeDefinition?.type === "webhook" && (
+                  <div className="space-y-4 pt-4 border-t border-[#1e293b]">
+                    <div className="flex items-center gap-2 pb-1">
+                      <Activity className="w-4 h-4 text-[#94a3b8]" />
+                      <h3 className="text-sm font-medium text-[#e6eef6]">Webhook Configuration</h3>
+                    </div>
+                    <WebhookPanel path={path} />
+                  </div>
                 )}
-            </CardContent>
-          </Card>
+
+          
+                {nodeDefinition?.credentials &&
+                  nodeDefinition.credentials.length > 0 && (
+                    <div className="space-y-4 pt-4 border-t border-[#1e293b]">
+                      <div className="flex items-center gap-2 pb-1">
+                        <Key className="w-4 h-4 text-[#94a3b8]" />
+                        <h3 className="text-sm font-medium text-[#e6eef6]">Credentials</h3>
+                      </div>
+                      <CredentialsPanel
+                        node={node}
+                        nodeDefinition={nodeDefinition}
+                        CreateCredentials={CreateCredentials}
+                        StoredCred={StoredCred}
+                        onUpdate={onUpdate}
+                      />
+                    </div>
+                  )}
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
-        {/* Right: 0.33 */}
-        <div className="flex-[0.33] min-w-[320px] h-full overflow-hidden bg-[#0b1017]">
+        <div className="flex-[0.3] min-w-[300px] h-full overflow-hidden bg-[#020617] border-l border-[#1e293b]">
           <OutputPanel nodeId={node.id} />
         </div>
       </div>

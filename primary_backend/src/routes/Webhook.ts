@@ -65,7 +65,6 @@ WebhookRouter.get(
 );
 WebhookRouter.all(
   "/handle/:path",
-  Authenticate,
   async (req: ExtendedReq, res: Response) => {
     try {
       const path = req.params.path;
@@ -88,6 +87,7 @@ WebhookRouter.all(
             message: "Webhook does not exist or workflow is not enabled",
           });
       }
+      let ExecId: number | null=null;
       //create an execution with transactional outbox pattern and also make and entry in the execution_taskTable
       await prisma.$transaction(async (ctx) => {
         const Exec = await ctx.execution.create({
@@ -102,8 +102,10 @@ WebhookRouter.all(
                 nodes: true,
               },
             },
+            
           },
         });
+        ExecId=Exec.id;
         //extracting the very first node which is supposed to be trigger
         const nodes = (Exec.workflow.nodes as Node[]) || undefined;
         const triggerNode = Array.isArray(nodes)
@@ -137,7 +139,7 @@ WebhookRouter.all(
           },
         });
       });
-      res.status(200).json({ message: "Webhook executed" });
+      res.status(200).json({ message: "Webhook executed",executionId:ExecId });
     } catch (error: any) {
       console.log(error);
       throw new Error(

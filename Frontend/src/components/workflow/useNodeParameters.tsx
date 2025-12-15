@@ -1,13 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
 
-/**
- * Hook that encapsulates parameter state + modes + sync to node
- * - initializes defaults
- * - persists defaults once when inspector opens
- * - handles mode switching and expression population
- */
+
+
 const useNodeParameters = ({ node, nodeDefinition, onUpdate }) => {
-  // initialize parameters with defaults from nodeDefinition and node.data
+
   const initParameters = useCallback(() => {
     const initial = { ...(node.data?.parameters || {}) };
     (nodeDefinition?.parameters || []).forEach((p) => {
@@ -20,7 +16,6 @@ const useNodeParameters = ({ node, nodeDefinition, onUpdate }) => {
 
   const [parameters, setParameters] = useState(() => initParameters());
 
-  // keep a map of modes (fixed | Expression)
   const [paramModes, setParamModes] = useState(() => {
     const modes = {};
     (nodeDefinition?.parameters || []).forEach((p) => {
@@ -29,12 +24,12 @@ const useNodeParameters = ({ node, nodeDefinition, onUpdate }) => {
     return modes;
   });
 
-  // persist defaults once when inspector opens for a node
+
   useEffect(() => {
     const defaults = initParameters();
     setParameters(defaults);
 
-    // only persist defaults if node has no meaningful parameters yet
+
     const nodeParams = node.data?.parameters;
     const hasNodeParams = nodeParams && Object.keys(nodeParams).length > 0;
 
@@ -42,11 +37,9 @@ const useNodeParameters = ({ node, nodeDefinition, onUpdate }) => {
       onUpdate({ ...node, data: { ...node.data, parameters: defaults } });
     }
 
-    // keep this effect tied to the inspector opening for a new node
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [node.id]);
 
-  // when node or definition changes, reinit local states
+
   useEffect(() => {
     setParameters(initParameters());
     const modes = {};
@@ -64,7 +57,6 @@ const useNodeParameters = ({ node, nodeDefinition, onUpdate }) => {
     });
   };
 
-  // When switching to Expression, populate with a json expression if value is empty or not already an expression
   const handleModeChange = (paramName, mode) => {
     setParamModes((prev) => ({ ...prev, [paramName]: mode }));
 

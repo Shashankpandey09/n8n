@@ -18,7 +18,7 @@ const WorkflowNavbar: React.FC<WorkflowNavbarProps> = ({
   onBack,
   onTest,
   onSave,
-  onDeleteSelection,
+ 
 }) => {
   return (
     <header className="border-b border-[#111827] bg-[#020617] shadow-[0_1px_0_#0f172a]">
@@ -87,22 +87,6 @@ const WorkflowNavbar: React.FC<WorkflowNavbarProps> = ({
             Save
           </Button>
 
-          {/* <Button
-            variant="destructive"
-            onClick={onDeleteSelection}
-            className="
-              h-9 px-4 rounded-md
-              bg-[#dc3545]
-              hover:bg-[#c62f3f]
-              text-white
-              shadow-sm
-              active:scale-[0.98]
-              transition-all
-            "
-          >
-            <Trash className="mr-2 h-4 w-4" />
-            Delete
-          </Button> */}
         </div>
       </div>
     </header>
