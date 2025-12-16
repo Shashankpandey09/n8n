@@ -41,7 +41,7 @@ export const useWebhook = create<Webhook>((set) => ({
   getWebhookUrl: async (workflowId: number) => {
     try {
       const res = await axios.get(
-        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/webhook/create/${workflowId}`,
+        `${import.meta.env.API_URL}/api/v1/webhook/create/${workflowId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -63,7 +63,7 @@ export const useWebhook = create<Webhook>((set) => ({
 
     try {
       const token = localStorage.getItem("token");
-      const url = `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/Nodes/get?nodeData=${encodeURIComponent(
+      const url = `${import.meta.env.API_URL}/api/v1/Nodes/get?nodeData=${encodeURIComponent(
         NodeId
       )}`;
 
@@ -146,7 +146,7 @@ export const useWebhook = create<Webhook>((set) => ({
   executeNode: async (nodeId, workflowId) => {
     try {
       const res = await axios.post(
-        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/Nodes/testNode`,
+        `${import.meta.env.API_URL}/api/v1/Nodes/testNode`,
         { nodeId, workflowId },
         {
           headers: {
@@ -168,7 +168,7 @@ export const useWebhook = create<Webhook>((set) => ({
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/Nodes/TestData?nodeID=${encodeURIComponent(
+        `${import.meta.env.API_URL}/api/v1/Nodes/TestData?nodeID=${encodeURIComponent(
           nodeId
         )}`,
         {
@@ -201,8 +201,8 @@ export const useWebhook = create<Webhook>((set) => ({
     const nodeMap = state.NodePayload;
    
     const parentIds = connections
-      .filter((c) => c.target === childId )
-      .map((c) => c.source);
+      ?.filter((c) => c.target === childId )
+      ?.map((c) => c.source);
     
     if (parentIds.length === 0) {
      
@@ -210,8 +210,8 @@ export const useWebhook = create<Webhook>((set) => ({
     }
 
     const outputs = parentIds
-      .map((pid) => nodeMap.get(pid)?.output || null)
-      .filter((o): o is Record<string, any> => o !== null);
+      ?.map((pid) => nodeMap.get(pid)?.output || null)
+      ?.filter((o): o is Record<string, any> => o !== null);
 
     const merged:Record<string,any>|null = outputs.length ? Object.assign({}, ...outputs) : null;
    

@@ -69,7 +69,7 @@ export const useCredStore = create<CredState>(
           };
 
           nextMeta = exists
-            ? current.map((c) => (c.id === msg.id ? newMetaItem : c))
+            ? current?.map((c) => (c.id === msg.id ? newMetaItem : c))
             : [...current, newMetaItem];
         }
 
@@ -197,7 +197,7 @@ export const useCredStore = create<CredState>(
         });
 
         const current = get().credentialsMetaData ?? [];
-        const nextMeta = current.filter((c) => c.platform !== platform);
+        const nextMeta = current?.filter((c) => c.platform !== platform);
 
         set({
           credentialsMetaData: nextMeta,
