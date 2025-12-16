@@ -47,21 +47,9 @@ const BaseNode = ({
   data: WFNodeData;
   isTrigger: boolean;
 }) => {
-  const { fetchExecutionTaskStatus, isTestActive, ExecutedNodes, ExecutionId } =
+  const { ExecutedNodes} =
     useExecutionStore((s) => s);
-  useEffect(() => {
-    let intervalID: NodeJS.Timeout | null = null;
-    if (isTestActive) {
-      intervalID = setInterval(() => {
-        fetchExecutionTaskStatus(ExecutionId);
-      }, 2000);
-      return () => {
-        if (intervalID) {
-          clearInterval(intervalID);
-        }
-      };
-    }
-  }, [isTestActive,fetchExecutionTaskStatus,ExecutedNodes]);
+  
   const label = data.label || data.type || "Node";
   const nodeStatus = ExecutedNodes.find((c) => c.nodeId === id)?.status;
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -144,6 +132,21 @@ const WorkflowEditor = () => {
   );
   const API_BASE =
   import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
+    const {  isTestActive, ExecutedNodes, ExecutionId } =
+    useExecutionStore((s) => s);
+  useEffect(() => {
+    let intervalID: NodeJS.Timeout | null = null;
+    if (isTestActive) {
+      intervalID = setInterval(() => {
+        fetchExecutionTaskStatus(ExecutionId);
+      }, 2000);
+      return () => {
+        if (intervalID) {
+          clearInterval(intervalID);
+        }
+      };
+    }
+  }, [isTestActive,fetchExecutionTaskStatus,ExecutedNodes]);
 
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
