@@ -63,7 +63,7 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
     try {
       set({ isLoading: true, error: null });
       const res = await axios.get(
-        `${import.meta.env.API_URL}/api/v1/workflow/executions`,
+        `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/workflow/executions`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -87,7 +87,7 @@ export const useExecutionStore = create<ExecutionState>((set) => ({
 
     try {
       const res = await axios.get(
-        `${import.meta.env.API_URL}/api/v1/workflow/executionTask/${executionId}`,
+        `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/workflow/executionTask/${executionId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

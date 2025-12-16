@@ -57,7 +57,7 @@ const Dashboard = () => {
       };
 
       const res = await axios.post(
-        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/workflow`,
+        `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/workflow`,
         newWorkflow,
         {
           headers: {
@@ -83,7 +83,7 @@ const Dashboard = () => {
   const handleDeleteWorkflow = async (id: number) => {
     try {
       const res = await axios.delete(
-        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/workflow/delete/${id}`,
+        `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/workflow/delete/${id}`,
         {
           headers: {
             "Content-Type": "application/json",

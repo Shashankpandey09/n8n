@@ -25,7 +25,8 @@ type Webhook = {
   deleteTestData: (nodeId: string) => Promise<void>;
   propagateAndMergeParents: (connections: Connection[], childId: string) => void;
 };
-
+const API_BASE =
+  import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
 export const useWebhook = create<Webhook>((set) => ({
   WebhookUrl: null,
   success: false,
@@ -41,7 +42,7 @@ export const useWebhook = create<Webhook>((set) => ({
   getWebhookUrl: async (workflowId: number) => {
     try {
       const res = await axios.get(
-        `${import.meta.env.API_URL}/api/v1/webhook/create/${workflowId}`,
+        `${API_BASE}/api/v1/webhook/create/${workflowId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -50,7 +51,7 @@ export const useWebhook = create<Webhook>((set) => ({
         }
       );
       
-      set({ success: true, WebhookUrl: res.data?.webhook?.path });
+      set({ success: true, WebhookUrl: res.data.webhook?.path });
     } catch (error) {
       console.error("Error fetching webhook URL:", error);
     }

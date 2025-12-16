@@ -142,6 +142,8 @@ const WorkflowEditor = () => {
   const fetchExecutionTaskStatus = useExecutionStore(
     (s) => s.fetchExecutionTaskStatus
   );
+  const API_BASE =
+  import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
 
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
@@ -345,7 +347,7 @@ const WorkflowEditor = () => {
         .NodePayload.get(triggerId).output;
 
       const res = await axios.post(
-        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/webhook/handle/${path}`,
+        `${API_BASE}/api/v1/webhook/handle/${path}`,
         triggerPayload,
         {
           headers: {

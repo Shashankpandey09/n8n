@@ -39,7 +39,7 @@ export const useCredStore = create<CredState>(
       try {
         const token = localStorage.getItem("token");
         const baseURL =
-          import.meta.env.VITE_API_URL ?? "https://flowboard.shashankpandey.dev";
+          import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
 
         const res = await axios.post<{ message?: Credential }>(
           `${baseURL}/api/v1/credential/`,
@@ -96,7 +96,7 @@ export const useCredStore = create<CredState>(
       try {
         const token = localStorage.getItem("token");
         const baseURL =
-          import.meta.env.VITE_API_URL ?? "https://flowboard.shashankpandey.dev";
+          import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
         const res = await axios.get<{
           value: Pick<Credential, "id" | "platform" | "createdAt">[];
         }>(`${baseURL}/api/v1/credential`, {
@@ -134,7 +134,7 @@ export const useCredStore = create<CredState>(
       try {
         const token = localStorage.getItem("token");
         const baseURL =
-          import.meta.env.VITE_API_URL ?? "https://flowboard.shashankpandey.dev";
+          import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
 
         const res = await axios.get(
           `${baseURL}/api/v1/credential/decrypted/${id}`,
@@ -182,7 +182,7 @@ export const useCredStore = create<CredState>(
       try {
         const token = localStorage.getItem("token");
         const baseURL =
-          import.meta.env.VITE_API_URL ?? "https://flowboard.shashankpandey.dev";
+          import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
 
         const url = `${baseURL}/api/v1/credential/delete?platform=${encodeURIComponent(
           platform
