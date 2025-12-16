@@ -64,7 +64,7 @@ export const useWebhook = create<Webhook>((set) => ({
 
     try {
       const token = localStorage.getItem("token");
-      const url = `${import.meta.env.API_URL}/api/v1/Nodes/get?nodeData=${encodeURIComponent(
+      const url = `${API_BASE}/api/v1/Nodes/get?nodeData=${encodeURIComponent(
         NodeId
       )}`;
 
@@ -147,7 +147,7 @@ export const useWebhook = create<Webhook>((set) => ({
   executeNode: async (nodeId, workflowId) => {
     try {
       const res = await axios.post(
-        `${import.meta.env.API_URL}/api/v1/Nodes/testNode`,
+        `${import.meta.env.API_URL|| "https://flowboard.shashankpandey.dev"}/api/v1/Nodes/testNode`,
         { nodeId, workflowId },
         {
           headers: {
@@ -169,7 +169,7 @@ export const useWebhook = create<Webhook>((set) => ({
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        `${import.meta.env.API_URL}/api/v1/Nodes/TestData?nodeID=${encodeURIComponent(
+        `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/Nodes/TestData?nodeID=${encodeURIComponent(
           nodeId
         )}`,
         {
