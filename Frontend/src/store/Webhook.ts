@@ -50,7 +50,7 @@ export const useWebhook = create<Webhook>((set) => ({
         }
       );
       
-      set({ success: true, WebhookUrl: res.data.webhook.path });
+      set({ success: true, WebhookUrl: res.data?.webhook?.path });
     } catch (error) {
       console.error("Error fetching webhook URL:", error);
     }
