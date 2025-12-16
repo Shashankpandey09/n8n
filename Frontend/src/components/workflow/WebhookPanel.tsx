@@ -1,8 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 
 const WebhookPanel = ({ path }) => {
-  const [testUrl, setTestUrl] = React.useState(false);
+  const [testUrl, setTestUrl] = useState(false);
 
   return (
     <div className="space-y-1">
