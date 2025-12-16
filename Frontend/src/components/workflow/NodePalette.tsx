@@ -5,11 +5,11 @@ import nodeDefinitions from "./NodeDefinitions";
 
 const NodePalette = ({ onAddNode, nodes }) => {
   const hasTrigger = nodes.some((n) => {
-    const definition = nodeDefinitions.find((def) => def.type === n.data.type);
+    const definition = nodeDefinitions?.find((def) => def.type === n.data.type);
     return definition?.category === "Trigger";
   });
 
-  const webhookExists = nodes.some((n) => n.data.type === "webhook");
+  const webhookExists = nodes?.some((n) => n.data.type === "webhook");
 
   return (
     <aside className="w-64 border-r border-[#1f2933] bg-[#0b1017] text-[#e6eef6] p-4 overflow-y-auto">

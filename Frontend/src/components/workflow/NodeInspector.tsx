@@ -23,7 +23,7 @@ const NodeInspector = ({
   savedCredentials,
   Nodes,
 }) => {
-  const nodeDefinition = nodeDefinitions.find((d) => d.type === node.data.type);
+  const nodeDefinition = nodeDefinitions?.find((d) => d.type === node.data.type);
   const CreateCredentials = useCredStore((s) => s.createCredentials);
   const { getWebhookUrl, WebhookUrl: path, success, executeNode } = useWebhook(
     (s) => s
@@ -31,7 +31,7 @@ const NodeInspector = ({
 
   const StoredCred = useCredStore(
     (s) =>
-      s.credentialsMetaData.find((s) => nodeDefinition?.type === s?.platform)
+      s.credentialsMetaData?.find((s) => nodeDefinition?.type === s?.platform)
         ?.platform ?? null
   );
 

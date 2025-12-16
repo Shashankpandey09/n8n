@@ -86,7 +86,7 @@ export default function CredentialsPage(): JSX.Element {
             </div>
 
 
-            {credentialsMetaData.length === 0 ? (
+            {credentialsMetaData?.length === 0 ? (
                <div className="relative rounded-2xl border border-dashed border-white/10 bg-[#1e293b]/10 p-12 text-center">
                 <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 border border-white/10">
                    <Key className="h-6 w-6 text-slate-400" />
@@ -109,7 +109,7 @@ export default function CredentialsPage(): JSX.Element {
               </div>
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                {credentialsMetaData.map((cred) => (
+                {credentialsMetaData?.map((cred) => (
                   <Card
                     key={cred.id ?? cred.platform}
                     className="group relative flex flex-col justify-between overflow-hidden rounded-xl border border-white/5 bg-[#1e293b]/20 backdrop-blur-sm transition-all duration-300 hover:border-sky-500/30 hover:bg-[#1e293b]/40 hover:shadow-xl hover:shadow-sky-900/10"
