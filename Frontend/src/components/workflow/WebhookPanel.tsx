@@ -32,8 +32,8 @@ const WebhookPanel = ({ path }) => {
           className="flex-1 px-4 py-2 bg-muted border border-input rounded-lg text-sm shadow-sm hover:opacity-90 transition-all duration-150 select-all break-words"
         >
           {testUrl
-            ? `${import.meta.env.API_URL}/api/v1/webhook/handle/test/${path}`
-            : `${import.meta.env.API_URL}/api/v1/webhook/handle/${path}`}
+            ? `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/webhook/handle/test/${path}`
+            : `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/webhook/handle/${path}`}
         </p>
       </div>
     </div>
