@@ -61,7 +61,7 @@ const BaseNode = ({
         }
       };
     }
-  }, [isTestActive]);
+  }, [isTestActive,fetchExecutionTaskStatus,ExecutedNodes]);
   const label = data.label || data.type || "Node";
   const nodeStatus = ExecutedNodes.find((c) => c.nodeId === id)?.status;
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -344,7 +344,7 @@ const WorkflowEditor = () => {
       const triggerId = payload?.nodes[0]?.id;
       const triggerPayload = useWebhook
         .getState()
-        .NodePayload.get(triggerId).output;
+        .NodePayload.get(triggerId)?.output;
 
       const res = await axios.post(
         `${API_BASE}/api/v1/webhook/handle/${path}`,
