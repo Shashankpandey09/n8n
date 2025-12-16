@@ -345,7 +345,7 @@ const WorkflowEditor = () => {
         .NodePayload.get(triggerId).output;
 
       const res = await axios.post(
-        `http://localhost:3000/api/v1/webhook/handle/${path}`,
+        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/webhook/handle/${path}`,
         triggerPayload,
         {
           headers: {

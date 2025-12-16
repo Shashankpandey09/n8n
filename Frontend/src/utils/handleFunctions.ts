@@ -31,7 +31,7 @@ export const handleSave = async (
     title: workflowTitle,
   };
   const res = await axios.put(
-    `http://localhost:3000/api/v1/workflow/update/${workflowId}`,
+    `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/workflow/update/${workflowId}`,
     { workflow: Payload },
     {
       headers: {

@@ -41,7 +41,7 @@ export const useWebhook = create<Webhook>((set) => ({
   getWebhookUrl: async (workflowId: number) => {
     try {
       const res = await axios.get(
-        `http://localhost:3000/api/v1/webhook/create/${workflowId}`,
+        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/webhook/create/${workflowId}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -63,7 +63,7 @@ export const useWebhook = create<Webhook>((set) => ({
 
     try {
       const token = localStorage.getItem("token");
-      const url = `http://localhost:3000/api/v1/Nodes/get?nodeData=${encodeURIComponent(
+      const url = `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/Nodes/get?nodeData=${encodeURIComponent(
         NodeId
       )}`;
 
@@ -146,7 +146,7 @@ export const useWebhook = create<Webhook>((set) => ({
   executeNode: async (nodeId, workflowId) => {
     try {
       const res = await axios.post(
-        `http://localhost:3000/api/v1/Nodes/testNode`,
+        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/Nodes/testNode`,
         { nodeId, workflowId },
         {
           headers: {
@@ -168,7 +168,7 @@ export const useWebhook = create<Webhook>((set) => ({
     try {
       const token = localStorage.getItem("token");
       await axios.delete(
-        `http://localhost:3000/api/v1/Nodes/TestData?nodeID=${encodeURIComponent(
+        `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/Nodes/TestData?nodeID=${encodeURIComponent(
           nodeId
         )}`,
         {

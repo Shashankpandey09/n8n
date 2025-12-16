@@ -37,7 +37,7 @@ export default function Auth() {
 
     setLoading(true);
     try {
-      const url = `http://localhost:3000/api/v1/user/${
+      const url = `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/user/${
         isSignIn ? "signin" : "signup"
       }`;
       const { data, status } = await axios.post(url, {
