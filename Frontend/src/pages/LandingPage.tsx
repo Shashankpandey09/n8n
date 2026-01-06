@@ -14,7 +14,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import '../FlowboardLanding.css'; 
+import '../FlowboardLanding.css';
 import { Link, useNavigate } from "react-router-dom";
 import FooterSection from "@/components/landingPage/Footer";
 //@ts-ignore
@@ -25,7 +25,7 @@ const FlowboardLanding = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const navigate =useNavigate();
+  const navigate = useNavigate();
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
@@ -69,11 +69,10 @@ const FlowboardLanding = () => {
       </div>
 
       <nav
-        className={`fixed w-full z-50 transition-all duration-500 ${
-          isScrolled
+        className={`fixed w-full z-50 transition-all duration-500 ${isScrolled
             ? "bg-[#0B1121]/80 backdrop-blur-xl border-b border-white/5 h-16"
             : "bg-transparent h-24"
-        }`}
+          }`}
       >
         <div className="max-w-[1400px] mx-auto px-6 h-full flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -91,9 +90,11 @@ const FlowboardLanding = () => {
 
           <div className="hidden md:flex items-center gap-8 text-[13px] font-medium text-slate-400">
             {["Product", "Solutions", "Enterprise", "Docs"].map((item) => (
-              <a onClick={()=>{if(item==='Docs'){
-                navigate(`/${item}`)
-              }}}
+              <a onClick={() => {
+                if (item === 'Docs') {
+                  navigate(`/${item}`)
+                }
+              }}
                 key={item}
                 href="#"
                 className="hover:text-sky-300 transition-colors"
@@ -104,25 +105,51 @@ const FlowboardLanding = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-4">
-            <Link to={localStorage.getItem('token')?'/dashboard':'/Auth'}>
-           <button className="bg-sky-500 hover:bg-sky-400 text-white px-4 py-2 rounded-lg text-[13px] font-semibold transition-all shadow-[0_0_20px_-5px_rgba(14,165,233,0.5)] border border-sky-400/20">
-              Start Automating
-            </button>
+            <Link to={localStorage.getItem('token') ? '/dashboard' : '/Auth'}>
+              <button className="bg-sky-500 hover:bg-sky-400 text-white px-4 py-2 rounded-lg text-[13px] font-semibold transition-all shadow-[0_0_20px_-5px_rgba(14,165,233,0.5)] border border-sky-400/20">
+                Start Automating
+              </button>
             </Link>
-           
+
           </div>
 
           <button
-            className="md:hidden text-slate-300"
+            className="md:hidden text-slate-300 z-50"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
             <Icon icon={mobileMenuOpen ? X : Menu} />
           </button>
         </div>
+
+
+        {mobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 right-0 bg-[#0B1121]/95 backdrop-blur-xl border-b border-white/5 py-6 px-6 flex flex-col gap-4 animate-in slide-in-from-top duration-300">
+            {["Product", "Solutions", "Enterprise", "Docs"].map((item) => (
+              <a
+                key={item}
+                onClick={() => {
+                  if (item === 'Docs') {
+                    navigate(`/${item}`);
+                  }
+                  setMobileMenuOpen(false);
+                }}
+                href="#"
+                className="text-slate-300 hover:text-sky-300 transition-colors text-base font-medium py-2"
+              >
+                {item}
+              </a>
+            ))}
+            <Link to={localStorage.getItem('token') ? '/dashboard' : '/Auth'} onClick={() => setMobileMenuOpen(false)}>
+              <button className="w-full bg-sky-500 hover:bg-sky-400 text-white px-4 py-3 rounded-lg text-sm font-semibold transition-all shadow-[0_0_20px_-5px_rgba(14,165,233,0.5)] border border-sky-400/20 mt-2">
+                Start Automating
+              </button>
+            </Link>
+          </div>
+        )}
       </nav>
 
       {/* HERO SECTION */}
-      <section className="relative pt-32 pb-20 md:pt-48 md:pb-40 px-6 overflow-hidden min-h-[90vh] flex flex-col items-center z-10">
+      <section className="relative pt-28 pb-16 md:pt-48 md:pb-40 px-4 sm:px-6 overflow-hidden min-h-[80vh] md:min-h-[90vh] flex flex-col items-center z-10">
         {/* Hero Text */}
         <div className="max-w-4xl mx-auto text-center relative z-10 mb-20">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-950/40 border border-blue-500/20 text-sky-300 text-[11px] font-mono tracking-wide mb-8 reveal-on-scroll shadow-[0_0_15px_-3px_rgba(14,165,233,0.2)]">
@@ -130,15 +157,15 @@ const FlowboardLanding = () => {
             V2.0 PUBLIC BETA
           </div>
 
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white tracking-tighter mb-8 leading-[1.05] reveal-on-scroll">
-            The visual backend for <br />
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-extrabold text-white tracking-tighter mb-6 md:mb-8 leading-[1.1] md:leading-[1.05] reveal-on-scroll">
+            The visual backend for <br className="hidden sm:block" />
             <span className="text-transparent bg-clip-text bg-gradient-to-br from-white via-sky-200 to-blue-400">
               modern engineering teams.
             </span>
           </h1>
 
           <p
-            className="text-lg text-slate-400 max-w-xl mx-auto mb-10 leading-relaxed reveal-on-scroll"
+            className="text-base md:text-lg text-slate-400 max-w-xl mx-auto mb-8 md:mb-10 leading-relaxed reveal-on-scroll px-2 sm:px-0"
             style={{ transitionDelay: "100ms" }}
           >
             Flowboard is the open-source workflow automation tool.
@@ -150,30 +177,30 @@ const FlowboardLanding = () => {
             className="flex flex-col sm:flex-row items-center justify-center gap-4 reveal-on-scroll"
             style={{ transitionDelay: "200ms" }}
           >  <Link to={'/Docs'}>
-            <button className="h-12 px-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-all shadow-[0_0_30px_-5px_rgba(2,132,199,0.5)] flex items-center gap-2 group border border-sky-400/20">
-             Documentation{" "}
-              <Icon
-                icon={ArrowRight}
-                className="w-4 h-4 group-hover:translate-x-1 transition-transform"
-              />
-            </button>
+              <button className="h-12 px-8 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-all shadow-[0_0_30px_-5px_rgba(2,132,199,0.5)] flex items-center gap-2 group border border-sky-400/20">
+                Documentation{" "}
+                <Icon
+                  icon={ArrowRight}
+                  className="w-4 h-4 group-hover:translate-x-1 transition-transform"
+                />
+              </button>
             </Link>
-            <div className="h-12 px-8 rounded-lg bg-[#1e293b]/50 border border-slate-700/50 hover:bg-[#1e293b] text-slate-300 font-medium text-sm transition-all flex items-center gap-2 cursor-pointer font-mono group">
-              <span className="text-sky-500">$</span> npx flowboard start
+            <div className="h-10 sm:h-12 px-4 sm:px-8 rounded-lg bg-[#1e293b]/50 border border-slate-700/50 hover:bg-[#1e293b] text-slate-300 font-medium text-xs sm:text-sm transition-all flex items-center gap-2 cursor-pointer font-mono group">
+              <span className="text-sky-500">$</span> <span className="hidden xs:inline">npx</span><span className="xs:hidden">npx</span> flowboard start
             </div>
           </div>
         </div>
 
- 
+
         <div
-          className="relative w-full max-w-[1200px] reveal-on-scroll"
+          className="relative w-full max-w-[1200px] reveal-on-scroll px-2 sm:px-0"
           style={{ transitionDelay: "300ms" }}
         >
 
           <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[85%] h-32 bg-sky-500/20 blur-[100px] -z-10 rounded-[100%]"></div>
 
-          <div className="relative rounded-xl border border-sky-500/10 bg-[#0f172a] hero-glow overflow-hidden aspect-[16/9] md:aspect-[2.4/1] group shadow-2xl shadow-black">
- 
+          <div className="relative rounded-xl border border-sky-500/10 bg-[#0f172a] hero-glow overflow-hidden aspect-[4/3] sm:aspect-[16/9] md:aspect-[2.4/1] group shadow-2xl shadow-black">
+
             <div className="h-10 border-b border-white/5 bg-[#0f172a] flex items-center justify-between px-4">
               <div className="flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-[#b40202] border border-white/5"></div>
@@ -192,34 +219,34 @@ const FlowboardLanding = () => {
               <div className="w-16"></div>
             </div>
 
-            
+
             <div className="absolute inset-0 top-10 bg-[#0B1121] bg-[radial-gradient(#38bdf80d_1px,transparent_1px)] [background-size:24px_24px]">
-    
-              <div className="absolute left-0 top-0 bottom-0 w-16 border-r border-white/5 flex flex-col items-center py-4 gap-6 bg-[#0f172a]/50 backdrop-blur-sm z-20">
-                <div className="p-2 rounded bg-sky-500/20 text-sky-400">
-                  <Icon icon={Workflow} size={20} />
+
+              <div className="absolute left-0 top-0 bottom-0 w-10 sm:w-16 border-r border-white/5 flex flex-col items-center py-2 sm:py-4 gap-3 sm:gap-6 bg-[#0f172a]/50 backdrop-blur-sm z-20">
+                <div className="p-1.5 sm:p-2 rounded bg-sky-500/20 text-sky-400">
+                  <Icon icon={Workflow} size={16} className="sm:w-5 sm:h-5" />
                 </div>
-                <div className="p-2 rounded hover:bg-white/5 text-slate-500 transition-colors">
-                  <Icon icon={Terminal} size={20} />
+                <div className="p-1.5 sm:p-2 rounded hover:bg-white/5 text-slate-500 transition-colors">
+                  <Icon icon={Terminal} size={16} className="sm:w-5 sm:h-5" />
                 </div>
-                <div className="p-2 rounded hover:bg-white/5 text-slate-500 transition-colors">
-                  <Icon icon={GitBranch} size={20} />
+                <div className="p-1.5 sm:p-2 rounded hover:bg-white/5 text-slate-500 transition-colors hidden sm:block">
+                  <Icon icon={GitBranch} size={16} className="sm:w-5 sm:h-5" />
                 </div>
-                <div className="p-2 rounded hover:bg-white/5 text-slate-500 transition-colors">
-                  <Icon icon={Layers} size={20} />
+                <div className="p-1.5 sm:p-2 rounded hover:bg-white/5 text-slate-500 transition-colors hidden sm:block">
+                  <Icon icon={Layers} size={16} className="sm:w-5 sm:h-5" />
                 </div>
               </div>
 
-  
-              <div className="absolute inset-0 left-16 overflow-hidden flex items-center justify-center">
-            
-                <div className="absolute top-6 right-6 flex gap-3 z-20">
-                  <div className="px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-medium flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>{" "}
-                    Live
+
+              <div className="absolute inset-0 left-10 sm:left-16 overflow-hidden flex items-center justify-center">
+
+                <div className="absolute top-2 sm:top-6 right-2 sm:right-6 flex gap-2 sm:gap-3 z-20">
+                  <div className="px-2 sm:px-4 py-1 sm:py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[10px] sm:text-xs font-medium flex items-center gap-1 sm:gap-2">
+                    <div className="w-1 sm:w-1.5 h-1 sm:h-1.5 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <span className="hidden xs:inline">Live</span>
                   </div>
-                  <button className="px-4 py-1.5 rounded bg-sky-600 text-white text-xs font-bold shadow-lg shadow-sky-500/20 hover:bg-sky-500 transition-colors">
-                    Execute
+                  <button className="px-2 sm:px-4 py-1 sm:py-1.5 rounded bg-sky-600 text-white text-[10px] sm:text-xs font-bold shadow-lg shadow-sky-500/20 hover:bg-sky-500 transition-colors">
+                    <span className="hidden xs:inline">Execute</span><span className="xs:hidden">Run</span>
                   </button>
                 </div>
 
@@ -240,61 +267,61 @@ const FlowboardLanding = () => {
                   />
                 </svg>
 
-                <div className="absolute left-[20%] top-1/2 -translate-y-1/2 w-52 bg-[#1e293b] border border-sky-500/10 rounded-lg p-4 shadow-xl hover:border-sky-500/40 transition-all cursor-pointer z-10 group/node">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded bg-sky-500/10 flex items-center justify-center border border-sky-500/20">
-                        <Icon icon={Globe} size={14} className="text-sky-400" />
+                <div className="absolute left-[5%] sm:left-[20%] top-1/2 -translate-y-1/2 w-32 sm:w-52 bg-[#1e293b] border border-sky-500/10 rounded-lg p-2 sm:p-4 shadow-xl hover:border-sky-500/40 transition-all cursor-pointer z-10 group/node">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <div className="w-5 sm:w-7 h-5 sm:h-7 rounded bg-sky-500/10 flex items-center justify-center border border-sky-500/20">
+                        <Icon icon={Globe} size={12} className="text-sky-400 sm:w-[14px] sm:h-[14px]" />
                       </div>
-                      <span className="text-xs font-bold text-sky-100 tracking-wide">
+                      <span className="text-[10px] sm:text-xs font-bold text-sky-100 tracking-wide">
                         WEBHOOK
                       </span>
                     </div>
                   </div>
-                  <div className="bg-[#0B1121] rounded p-2 text-[10px] font-mono text-slate-400 border border-white/5 group-hover/node:text-sky-200 transition-colors">
-                    POST /v1/hooks/payment
+                  <div className="bg-[#0B1121] rounded p-1 sm:p-2 text-[8px] sm:text-[10px] font-mono text-slate-400 border border-white/5 group-hover/node:text-sky-200 transition-colors truncate">
+                    POST /v1/hooks/...
                   </div>
                 </div>
 
                 {/* Node 2: Logic */}
-                <div className="absolute left-[50%] -translate-x-1/2 top-1/2 -translate-y-1/2 w-52 bg-[#1e293b] border border-sky-500/10 rounded-lg p-4 shadow-xl hover:border-sky-500/40 transition-all cursor-pointer z-10 group/node">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
+                <div className="absolute left-[50%] -translate-x-1/2 top-1/2 -translate-y-1/2 w-32 sm:w-52 bg-[#1e293b] border border-sky-500/10 rounded-lg p-2 sm:p-4 shadow-xl hover:border-sky-500/40 transition-all cursor-pointer z-10 group/node">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <div className="w-5 sm:w-7 h-5 sm:h-7 rounded bg-amber-500/10 flex items-center justify-center border border-amber-500/20">
                         <Icon
                           icon={Code2}
-                          size={14}
-                          className="text-amber-400"
+                          size={12}
+                          className="text-amber-400 sm:w-[14px] sm:h-[14px]"
                         />
                       </div>
-                      <span className="text-xs font-bold text-sky-100 tracking-wide">
+                      <span className="text-[10px] sm:text-xs font-bold text-sky-100 tracking-wide">
                         TRANSFORM
                       </span>
                     </div>
                   </div>
-                  <div className="bg-[#0B1121] rounded p-2 text-[10px] font-mono text-slate-400 border border-white/5 group-hover/node:text-amber-200 transition-colors">
-                    return JSON.parse(body)
+                  <div className="bg-[#0B1121] rounded p-1 sm:p-2 text-[8px] sm:text-[10px] font-mono text-slate-400 border border-white/5 group-hover/node:text-amber-200 transition-colors truncate">
+                    JSON.parse(body)
                   </div>
                 </div>
 
                 {/* Node 3: Output */}
-                <div className="absolute right-[20%] top-1/2 -translate-y-1/2 w-52 bg-[#1e293b] border border-sky-500/10 rounded-lg p-4 shadow-xl hover:border-sky-500/40 transition-all cursor-pointer z-10 group/node">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
+                <div className="absolute right-[5%] sm:right-[20%] top-1/2 -translate-y-1/2 w-32 sm:w-52 bg-[#1e293b] border border-sky-500/10 rounded-lg p-2 sm:p-4 shadow-xl hover:border-sky-500/40 transition-all cursor-pointer z-10 group/node">
+                  <div className="flex items-center justify-between mb-2 sm:mb-3">
+                    <div className="flex items-center gap-1 sm:gap-2">
+                      <div className="w-5 sm:w-7 h-5 sm:h-7 rounded bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20">
                         <Icon
                           icon={Database}
-                          size={14}
-                          className="text-indigo-400"
+                          size={12}
+                          className="text-indigo-400 sm:w-[14px] sm:h-[14px]"
                         />
                       </div>
-                      <span className="text-xs font-bold text-sky-100 tracking-wide">
+                      <span className="text-[10px] sm:text-xs font-bold text-sky-100 tracking-wide">
                         POSTGRES
                       </span>
                     </div>
                   </div>
-                  <div className="bg-[#0B1121] rounded p-2 text-[10px] font-mono text-slate-400 border border-white/5 group-hover/node:text-indigo-200 transition-colors">
-                    INSERT INTO transactions
+                  <div className="bg-[#0B1121] rounded p-1 sm:p-2 text-[8px] sm:text-[10px] font-mono text-slate-400 border border-white/5 group-hover/node:text-indigo-200 transition-colors truncate">
+                    INSERT INTO...
                   </div>
                 </div>
               </div>
@@ -303,42 +330,42 @@ const FlowboardLanding = () => {
         </div>
       </section>
 
-      <section className="py-32 px-6 relative z-10">
+      <section className="py-16 md:py-32 px-4 sm:px-6 relative z-10">
         <div className="max-w-[1200px] mx-auto">
-          <div className="mb-20 text-center">
-            <h2 className="text-3xl md:text-5xl font-bold text-white tracking-tight mb-6">
+          <div className="mb-10 md:mb-20 text-center">
+            <h2 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white tracking-tight mb-4 md:mb-6">
               Engineered for <span className="text-sky-400">scale</span>.
             </h2>
-            <p className="text-slate-400 text-lg">
+            <p className="text-slate-400 text-base md:text-lg px-4 sm:px-0">
               Built on modern standards to handle millions of executions.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-6 grid-rows-2 h-auto md:h-[600px]">
-         
-            <div className="glass-card md:col-span-4 rounded-3xl p-8 relative overflow-hidden group transition-all duration-500 hover:border-sky-500/30">
-              <div className="absolute top-0 right-0 w-80 h-80 bg-sky-500/10 blur-[100px] -z-10 group-hover:bg-sky-500/20 transition-colors duration-500"></div>
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 md:gap-6 md:grid-rows-2 h-auto md:h-[600px]">
+
+            <div className="glass-card md:col-span-4 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden group transition-all duration-500 hover:border-sky-500/30">
+              <div className="absolute top-0 right-0 w-40 md:w-80 h-40 md:h-80 bg-sky-500/10 blur-[100px] -z-10 group-hover:bg-sky-500/20 transition-colors duration-500"></div>
 
               <div className="flex flex-col h-full justify-between relative z-10">
                 <div>
-                  <div className="w-10 h-10 rounded-lg bg-[#0f172a] border border-sky-500/20 flex items-center justify-center mb-6 text-white shadow-lg">
+                  <div className="w-8 md:w-10 h-8 md:h-10 rounded-lg bg-[#0f172a] border border-sky-500/20 flex items-center justify-center mb-4 md:mb-6 text-white shadow-lg">
                     <Icon
                       icon={MousePointer2}
-                      size={20}
-                      className="text-sky-400"
+                      size={16}
+                      className="text-sky-400 md:w-5 md:h-5"
                     />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-2">
+                  <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
                     Drag & Drop Builder
                   </h3>
-                  <p className="text-slate-400 max-w-sm">
+                  <p className="text-slate-400 max-w-sm text-sm md:text-base">
                     Build complex logic branches visually. What you see is
                     exactly how your data flows.
                   </p>
                 </div>
 
-                <div className="w-full h-48 mt-8 rounded-xl bg-[#0B1121] border border-white/5 relative overflow-hidden">
-                  <div className="absolute inset-0 grid grid-cols-6 gap-2 p-3 opacity-20">
+                <div className="w-full h-32 md:h-48 mt-6 md:mt-8 rounded-xl bg-[#0B1121] border border-white/5 relative overflow-hidden">
+                  <div className="absolute inset-0 grid grid-cols-4 md:grid-cols-6 gap-2 p-3 opacity-20">
                     {[...Array(12)].map((_, i) => (
                       <div
                         key={i}
@@ -353,26 +380,26 @@ const FlowboardLanding = () => {
             </div>
 
 
-            <div className="glass-card md:col-span-2 md:row-span-2 rounded-3xl p-8 relative overflow-hidden group transition-all duration-500 hover:border-amber-500/30">
+            <div className="glass-card md:col-span-2 md:row-span-2 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden group transition-all duration-500 hover:border-amber-500/30">
               <div className="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-amber-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
               <div className="flex flex-col h-full">
-                <div className="w-10 h-10 rounded-lg bg-[#0f172a] border border-amber-500/20 flex items-center justify-center mb-6 text-white shadow-lg">
-                  <Icon icon={Terminal} size={20} className="text-amber-400" />
+                <div className="w-8 md:w-10 h-8 md:h-10 rounded-lg bg-[#0f172a] border border-amber-500/20 flex items-center justify-center mb-4 md:mb-6 text-white shadow-lg">
+                  <Icon icon={Terminal} size={16} className="text-amber-400 md:w-5 md:h-5" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-2">
                   Code Native
                 </h3>
-                <p className="text-slate-400 mb-8 text-sm">
+                <p className="text-slate-400 mb-4 md:mb-8 text-sm">
                   Don't get stuck in a GUI. Write raw JavaScript whenever you
                   need custom transformation logic.
                 </p>
 
-                <div className="flex-1 rounded-xl bg-[#0B1121] border border-white/5 p-4 font-mono text-[11px] text-slate-400 shadow-inner group-hover:border-amber-500/30 transition-colors">
-                  <div className="flex gap-2 mb-3 border-b border-white/5 pb-2">
+                <div className="flex-1 rounded-xl bg-[#0B1121] border border-white/5 p-3 md:p-4 font-mono text-[10px] md:text-[11px] text-slate-400 shadow-inner group-hover:border-amber-500/30 transition-colors overflow-hidden">
+                  <div className="flex gap-2 mb-2 md:mb-3 border-b border-white/5 pb-2">
                     <div className="w-2 h-2 rounded-full bg-red-500/50"></div>
                     <div className="w-2 h-2 rounded-full bg-yellow-500/50"></div>
-                    <span className="text-sky-400 ml-auto">transform.js</span>
+                    <span className="text-sky-400 ml-auto text-[9px] md:text-[11px]">transform.js</span>
                   </div>
                   <div className="leading-relaxed">
                     <span className="text-purple-400">export default</span>{" "}
@@ -401,24 +428,24 @@ const FlowboardLanding = () => {
               </div>
             </div>
 
-       
-            <div className="glass-card md:col-span-2 rounded-3xl p-8 relative overflow-hidden group transition-all duration-500 hover:border-emerald-500/30">
-              <div className="w-10 h-10 rounded-lg bg-[#0f172a] border border-emerald-500/20 flex items-center justify-center mb-4 text-white shadow-lg">
-                <Icon icon={Shield} size={20} className="text-emerald-400" />
+
+            <div className="glass-card md:col-span-2 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden group transition-all duration-500 hover:border-emerald-500/30">
+              <div className="w-8 md:w-10 h-8 md:h-10 rounded-lg bg-[#0f172a] border border-emerald-500/20 flex items-center justify-center mb-3 md:mb-4 text-white shadow-lg">
+                <Icon icon={Shield} size={16} className="text-emerald-400 md:w-5 md:h-5" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">SOC2 Ready</h3>
+              <h3 className="text-base md:text-lg font-bold text-white mb-2">SOC2 Ready</h3>
               <p className="text-slate-500 text-sm">
                 Self-host in your own VPC. Your data never leaves your
                 infrastructure.
               </p>
             </div>
 
-         
-            <div className="glass-card md:col-span-2 rounded-3xl p-8 relative overflow-hidden group transition-all duration-500 hover:border-indigo-500/30">
-              <div className="w-10 h-10 rounded-lg bg-[#0f172a] border border-indigo-500/20 flex items-center justify-center mb-4 text-white shadow-lg">
-                <Icon icon={Zap} size={20} className="text-indigo-400" />
+
+            <div className="glass-card md:col-span-2 rounded-2xl md:rounded-3xl p-5 md:p-8 relative overflow-hidden group transition-all duration-500 hover:border-indigo-500/30">
+              <div className="w-8 md:w-10 h-8 md:h-10 rounded-lg bg-[#0f172a] border border-indigo-500/20 flex items-center justify-center mb-3 md:mb-4 text-white shadow-lg">
+                <Icon icon={Zap} size={16} className="text-indigo-400 md:w-5 md:h-5" />
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">Low Latency</h3>
+              <h3 className="text-base md:text-lg font-bold text-white mb-2">Low Latency</h3>
               <p className="text-slate-500 text-sm">
                 Built on Rust-based workers for millisecond execution times.
               </p>
@@ -427,8 +454,8 @@ const FlowboardLanding = () => {
         </div>
       </section>
 
-    
-     <FooterSection/>
+
+      <FooterSection />
     </div>
   );
 };

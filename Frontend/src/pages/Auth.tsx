@@ -37,9 +37,8 @@ export default function Auth() {
 
     setLoading(true);
     try {
-      const url = `${import.meta.env.API_URL??"https://flowboard.shashankpandey.dev"}/api/v1/user/${
-        isSignIn ? "signin" : "signup"
-      }`;
+      const url = `${import.meta.env.API_URL ?? "https://flowboard.shashankpandey.dev"}/api/v1/user/${isSignIn ? "signin" : "signup"
+        }`;
       const { data, status } = await axios.post(url, {
         username: email,
         password,
@@ -63,15 +62,14 @@ export default function Auth() {
   };
 
   return (
-    // Updated BG to Landing Page Deep Blue #020817
-    <div className="min-h-screen bg-[#020817] text-[#e6eef6] flex items-center justify-center px-4 py-10 relative overflow-hidden font-sans">
-      
-      {/* Landing Page Style Background Effects */}
+
+    <div className="min-h-screen bg-[#020817] text-[#e6eef6] flex items-center justify-center px-3 sm:px-4 py-6 sm:py-10 relative overflow-hidden font-sans">
+
+
       <div className="pointer-events-none absolute inset-0">
-        {/* Subtle Grid Pattern */}
+
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f29371a_1px,transparent_1px),linear-gradient(to_bottom,#1f29371a_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-        
-        {/* Glow Effects */}
+
         <div className="absolute -top-40 -left-32 h-64 w-64 rounded-full bg-[#3b82f6]/20 blur-3xl opacity-50" />
         <div className="absolute -bottom-40 -right-10 h-72 w-72 rounded-full bg-[#0ea5e9]/20 blur-3xl opacity-50" />
       </div>
@@ -82,13 +80,13 @@ export default function Auth() {
         transition={{ duration: 0.3 }}
         className="relative w-full max-w-4xl z-10"
       >
-        {/* Updated Card Style to match NodeInspector (#0b1017 bg, #1e293b border) */}
+
         <Card className="bg-[#0b1017]/90 backdrop-blur-sm border border-[#1e293b] rounded-2xl shadow-[0_0_0_1px_rgba(30,41,59,0.5),0_20px_60px_rgba(0,0,0,0.7)] overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-[1.1fr_1.1fr]">
-        
-            {/* Left Side Visual */}
+
+
             <div className="hidden md:flex flex-col justify-between bg-[#020617] border-r border-[#1e293b] px-8 py-8 relative">
-              {/* Inner Grid for visual interest */}
+
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f293710_1px,transparent_1px),linear-gradient(to_bottom,#1f293710_1px,transparent_1px)] bg-[size:2rem_2rem] opacity-50 pointer-events-none" />
 
               <div className="relative z-10 flex items-center justify-between mb-6">
@@ -168,8 +166,7 @@ export default function Auth() {
               </div>
             </div>
 
-            {/* Right Side Form */}
-            <CardContent className="px-6 py-8 md:px-10 md:py-12 bg-[#0b1017]">
+            <CardContent className="px-4 py-6 sm:px-6 sm:py-8 md:px-10 md:py-12 bg-[#0b1017]">
               <CardHeader className="p-0 mb-8">
                 <CardTitle className="text-xl font-semibold text-white">
                   {isSignIn ? "Sign in" : "Create account"}
@@ -234,7 +231,7 @@ export default function Auth() {
                 </div>
 
                 {!isSignIn && (
-                   <div className="text-[11px] text-[#64748b] px-1">
+                  <div className="text-[11px] text-[#64748b] px-1">
                     Password must be at least 8 characters long.
                   </div>
                 )}

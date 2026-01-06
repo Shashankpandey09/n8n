@@ -57,7 +57,7 @@ const Dashboard = () => {
       };
 
       const res = await axios.post(
-        `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/workflow`,
+        `${import.meta.env.API_URL || "https://flowboard.shashankpandey.dev"}/api/v1/workflow`,
         newWorkflow,
         {
           headers: {
@@ -83,7 +83,7 @@ const Dashboard = () => {
   const handleDeleteWorkflow = async (id: number) => {
     try {
       const res = await axios.delete(
-        `${import.meta.env.API_URL||"https://flowboard.shashankpandey.dev"}/api/v1/workflow/delete/${id}`,
+        `${import.meta.env.API_URL || "https://flowboard.shashankpandey.dev"}/api/v1/workflow/delete/${id}`,
         {
           headers: {
             "Content-Type": "application/json",
@@ -109,23 +109,23 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-[#0B1121] text-slate-300 font-sans selection:bg-sky-500/30 relative overflow-x-hidden">
-      
-     
+
+
       <div className="fixed inset-0 pointer-events-none z-0">
 
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-[500px] bg-[radial-gradient(ellipse_at_top,#1e3a8a30,transparent_70%)]"></div>
       </div>
 
-    
+
       <div className="relative z-10">
         <Navbar />
 
-        <main className="mx-auto max-w-7xl px-6 py-12">
-  
-          <div className="mb-10 flex flex-col gap-6 md:flex-row md:items-end md:justify-between border-b border-white/5 pb-8">
+        <main className="mx-auto max-w-7xl px-4 sm:px-6 py-8 md:py-12">
+
+          <div className="mb-8 md:mb-10 flex flex-col gap-4 md:gap-6 md:flex-row md:items-end md:justify-between border-b border-white/5 pb-6 md:pb-8">
             <div>
-              <h2 className="text-3xl font-bold text-white tracking-tight mb-2">Workflows</h2>
-              <p className="text-slate-400">
+              <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight mb-2">Workflows</h2>
+              <p className="text-slate-400 text-sm md:text-base">
                 Manage your automation pipelines.
               </p>
             </div>
@@ -133,26 +133,26 @@ const Dashboard = () => {
             <div className="flex items-center gap-3">
               <Button
                 onClick={handleCreateWorkflow}
-                className="h-10 px-6 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-all shadow-[0_0_20px_-5px_rgba(2,132,199,0.5)] flex items-center gap-2 group border border-sky-400/20"
+                className="h-9 md:h-10 px-4 md:px-6 rounded-lg bg-sky-600 hover:bg-sky-500 text-white font-medium text-sm transition-all shadow-[0_0_20px_-5px_rgba(2,132,199,0.5)] flex items-center gap-2 group border border-sky-400/20"
               >
                 <Plus className="h-4 w-4 group-hover:rotate-90 transition-transform" />
-                <span>New Workflow</span>
+                <span className="hidden xs:inline">New Workflow</span><span className="xs:hidden">New</span>
               </Button>
             </div>
           </div>
 
-   
+
           {workflows.length === 0 ? (
-        
-            <div className="relative rounded-2xl border border-dashed border-white/10 bg-[#1e293b]/10 p-12 text-center">
-               <div className="mx-auto mb-6 flex h-14 w-14 items-center justify-center rounded-xl bg-white/5 border border-white/10">
-                  <WorkflowIcon className="h-6 w-6 text-slate-400" />
-               </div>
-               <h3 className="mb-2 text-lg font-semibold text-white">No workflows yet</h3>
-               <p className="mb-8 text-slate-500 max-w-sm mx-auto text-sm">
-                 Create your first automation workflow to get started.
-               </p>
-               <Button
+
+            <div className="relative rounded-2xl border border-dashed border-white/10 bg-[#1e293b]/10 p-8 md:p-12 text-center">
+              <div className="mx-auto mb-4 md:mb-6 flex h-12 md:h-14 w-12 md:w-14 items-center justify-center rounded-xl bg-white/5 border border-white/10">
+                <WorkflowIcon className="h-6 w-6 text-slate-400" />
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-white">No workflows yet</h3>
+              <p className="mb-8 text-slate-500 max-w-sm mx-auto text-sm">
+                Create your first automation workflow to get started.
+              </p>
+              <Button
                 onClick={handleCreateWorkflow}
                 variant="outline"
                 className="mx-auto h-9 px-4 rounded-lg bg-transparent hover:bg-white/5 text-slate-300 border-white/10 hover:text-white transition-all text-sm"
@@ -162,8 +162,8 @@ const Dashboard = () => {
               </Button>
             </div>
           ) : (
-            
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+
+            <div className="grid gap-4 md:gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
               {workflows.map((workflow) => (
                 <Card
                   key={workflow.id}
@@ -172,26 +172,26 @@ const Dashboard = () => {
                   <CardHeader className="pb-2">
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
-                  
-                        <CardTitle className="text-base font-semibold text-white group-hover:text-sky-100 transition-colors">
+
+                        <CardTitle className="text-sm md:text-base font-semibold text-white group-hover:text-sky-100 transition-colors">
                           {workflow.title}
                         </CardTitle>
-                        
-             
+
+
                         <div className="flex flex-wrap gap-2 text-[11px] font-medium text-slate-500">
-                           <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                              <Layers className="h-3 w-3" />
-                              <span>{workflow.nodes.length} nodes</span>
-                           </div>
-                           <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">
-                              <Calendar className="h-3 w-3" />
-                              <span>{new Date(workflow.createdAt).toLocaleDateString()}</span>
-                           </div>
+                          <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                            <Layers className="h-3 w-3" />
+                            <span>{workflow.nodes.length} nodes</span>
+                          </div>
+                          <div className="flex items-center gap-1 bg-white/5 px-2 py-0.5 rounded border border-white/5">
+                            <Calendar className="h-3 w-3" />
+                            <span>{new Date(workflow.createdAt).toLocaleDateString()}</span>
+                          </div>
                         </div>
                       </div>
-                 
+
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                         <Button
+                        <Button
                           variant="ghost"
                           size="icon"
                           onClick={(e) => { e.stopPropagation(); navigate(`/workflow/${workflow.id}`); }}
@@ -212,14 +212,14 @@ const Dashboard = () => {
                   </CardHeader>
 
                   <CardContent className="pt-4">
-               
-                      <Button
-                        onClick={() => navigate(`/workflow/${workflow.id}`)}
-                        className="w-full h-9 rounded-lg bg-white/5 hover:bg-sky-600 hover:text-white text-xs font-medium text-slate-300 border border-white/5 hover:border-sky-500/50 transition-all flex items-center justify-between group/btn"
-                      >
-                        <span className="pl-1">Open Editor</span>
-                        <ArrowRight className="h-3.5 w-3.5 opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
-                      </Button>
+
+                    <Button
+                      onClick={() => navigate(`/workflow/${workflow.id}`)}
+                      className="w-full h-9 rounded-lg bg-white/5 hover:bg-sky-600 hover:text-white text-xs font-medium text-slate-300 border border-white/5 hover:border-sky-500/50 transition-all flex items-center justify-between group/btn"
+                    >
+                      <span className="pl-1">Open Editor</span>
+                      <ArrowRight className="h-3.5 w-3.5 opacity-50 group-hover/btn:opacity-100 group-hover/btn:translate-x-1 transition-all" />
+                    </Button>
                   </CardContent>
                 </Card>
               ))}

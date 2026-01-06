@@ -28,7 +28,7 @@ import axios from "axios";
 import { useWebhook } from "@/store/Webhook";
 import { useCredStore } from "@/store/CredStore";
 import WorkflowNavbar from "@/components/workflow/WorkflowNavbar";
-import { Trash2 } from "lucide-react";
+import { Trash2, Plus, X } from "lucide-react";
 import { icons, styles } from "@/components/executionPage/StatusBadge";
 import { useExecutionStore } from "@/store/useExecutionStore";
 
@@ -47,9 +47,9 @@ const BaseNode = ({
   data: WFNodeData;
   isTrigger: boolean;
 }) => {
-  const { ExecutedNodes} =
+  const { ExecutedNodes } =
     useExecutionStore((s) => s);
-  
+
   const label = data.label || data.type || "Node";
   const nodeStatus = ExecutedNodes.find((c) => c.nodeId === id)?.status;
   const handleDeleteClick = (e: React.MouseEvent) => {
@@ -65,7 +65,7 @@ const BaseNode = ({
         <div className=" text-center  ">
           <span className="text-sm flex justify-around items-center font-medium text-[#e5e7eb] capitalize">
             {label}
-            <span  className={`${styles[nodeStatus]} bg-inherit`}>{icons[nodeStatus]}</span>
+            <span className={`${styles[nodeStatus]} bg-inherit`}>{icons[nodeStatus]}</span>
           </span>
         </div>
         <button
@@ -125,14 +125,15 @@ const WorkflowEditor = () => {
   const [selectedEdge, setSelectedEdge] = useState<Edge | null>(null);
 
   const [workflowTitle, setWorkflowTitle] = useState("New Workflow");
+  const [showMobilePalette, setShowMobilePalette] = useState(false);
   const savedCredentials = useCredStore((s) => s.credentialsMetaData);
   const { setListening, setPolling } = useWebhook((s) => s);
   const fetchExecutionTaskStatus = useExecutionStore(
     (s) => s.fetchExecutionTaskStatus
   );
   const API_BASE =
-  import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
-    const {  isTestActive, ExecutedNodes, ExecutionId } =
+    import.meta.env.VITE_API_URL || "https://flowboard.shashankpandey.dev";
+  const { isTestActive, ExecutedNodes, ExecutionId } =
     useExecutionStore((s) => s);
   useEffect(() => {
     let intervalID: NodeJS.Timeout | null = null;
@@ -146,7 +147,7 @@ const WorkflowEditor = () => {
         }
       };
     }
-  }, [isTestActive,fetchExecutionTaskStatus,ExecutedNodes]);
+  }, [isTestActive, fetchExecutionTaskStatus, ExecutedNodes]);
 
   useEffect(() => {
     const allWorkflows = JSON.parse(localStorage.getItem("workflows") || "[]");
@@ -418,6 +419,45 @@ const WorkflowEditor = () => {
             />
           </ReactFlow>
         </div>
+
+        {/* Mobile Floating Add Button */}
+        <button
+          className="sm:hidden fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full bg-sky-600 text-white shadow-lg shadow-sky-900/40 flex items-center justify-center hover:bg-sky-500 transition-all active:scale-95"
+          onClick={() => setShowMobilePalette(!showMobilePalette)}
+          aria-label="Toggle Node Palette"
+        >
+          {showMobilePalette ? <X className="w-6 h-6" /> : <Plus className="w-6 h-6" />}
+        </button>
+
+        {/* Mobile Node Palette Overlay */}
+        {showMobilePalette && (
+          <div className="sm:hidden fixed inset-0 z-30 bg-black/50" onClick={() => setShowMobilePalette(false)}>
+            <div
+              className="absolute bottom-0 left-0 right-0 max-h-[60vh] bg-[#0b1017] border-t border-[#1f2933] rounded-t-2xl overflow-y-auto animate-in slide-in-from-bottom duration-300"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="sticky top-0 bg-[#0b1017] border-b border-[#1f2933] px-4 py-3 flex items-center justify-between">
+                <span className="text-sm font-semibold text-[#cbd5f5]">Add Node</span>
+                <button
+                  onClick={() => setShowMobilePalette(false)}
+                  className="p-1 rounded hover:bg-white/10 text-slate-400"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="p-4">
+                <NodePalette
+                  onAddNode={(type, category, description) => {
+                    handleAddNode(type, category, description);
+                    setShowMobilePalette(false);
+                  }}
+                  nodes={nodes}
+                  isMobile={true}
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {selectedNode && (
           <div className="fixed inset-0 z-50 bg-black/40">

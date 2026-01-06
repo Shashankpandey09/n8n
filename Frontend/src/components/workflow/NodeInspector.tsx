@@ -53,20 +53,20 @@ const NodeInspector = ({
   const actionValue: string = Array.isArray(actionSource)
     ? String(actionSource[0] ?? "")
     : actionSource == null
-    ? ""
-    : String(actionSource);
+      ? ""
+      : String(actionSource);
 
   const actionOptions: string[] = Array.isArray(nodeDefinition?.description)
     ? nodeDefinition.description.map((s) => String(s))
     : [String(nodeDefinition?.description ?? "")];
 
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-[#020817] text-[#e6eef6] animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex flex-col bg-[#020817] text-[#e6eef6] animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
       {/* Top bar */}
-      <header className="flex h-14 items-center justify-between px-6 border-b border-[#1e293b] bg-[#020817]">
+      <header className="flex h-12 sm:h-14 items-center justify-between px-3 sm:px-6 border-b border-[#1e293b] bg-[#020817] shrink-0">
         <div className="flex items-center gap-2">
-          <Settings className="w-4 h-4 text-[#94a3b8]" />
-          <h2 className="text-sm font-semibold tracking-wide text-[#e6eef6]">Node Configuration</h2>
+          <Settings className="w-4 h-4 text-[#94a3b8] hidden sm:block" />
+          <h2 className="text-xs sm:text-sm font-semibold tracking-wide text-[#e6eef6]">Node Configuration</h2>
         </div>
 
         <div className="flex items-center gap-3">
@@ -93,9 +93,9 @@ const NodeInspector = ({
         </div>
       </header>
 
-      <div className="flex flex-1 overflow-hidden">
-       
-        <div className="flex-[0.3] min-w-[300px] h-full overflow-hidden bg-[#020617] border-r border-[#1e293b]">
+      <div className="flex flex-1 overflow-hidden flex-col md:flex-row">
+
+        <div className="hidden md:flex flex-[0.3] min-w-[250px] h-full overflow-hidden bg-[#020617] border-r border-[#1e293b]">
           <LeftPanel
             nodeDefinition={nodeDefinition}
             nodeId={node.id}
@@ -103,12 +103,12 @@ const NodeInspector = ({
           />
         </div>
 
-        <div className="flex-[0.4] min-w-[400px] h-full overflow-y-auto bg-[#020817] relative">
-          <div className="absolute inset-0 px-8 py-8">
+        <div className="flex-1 md:flex-[0.4] md:min-w-[350px] h-full overflow-y-auto bg-[#020617] relative">
+          <div className="absolute inset-0 px-4 sm:px-6 md:px-8 py-4 sm:py-6 md:py-8">
             <Card className="border-none shadow-none bg-transparent">
               <CardContent className="space-y-8 px-0 py-0">
-                
-    
+
+
                 <div className="space-y-3">
                   <label
                     htmlFor="nodeLabel"
@@ -151,7 +151,7 @@ const NodeInspector = ({
                   </div>
                 </div>
 
-           
+
                 <div className="space-y-4 pt-4 border-t border-[#1e293b]">
                   <div className="flex items-center gap-2 pb-1">
                     <Activity className="w-4 h-4 text-[#94a3b8]" />
@@ -177,7 +177,7 @@ const NodeInspector = ({
                   </div>
                 )}
 
-          
+
                 {nodeDefinition?.credentials &&
                   nodeDefinition.credentials.length > 0 && (
                     <div className="space-y-4 pt-4 border-t border-[#1e293b]">
@@ -199,7 +199,7 @@ const NodeInspector = ({
           </div>
         </div>
 
-        <div className="flex-[0.3] min-w-[300px] h-full overflow-hidden bg-[#020617] border-l border-[#1e293b]">
+        <div className="hidden md:flex flex-[0.3] min-w-[250px] h-full overflow-hidden bg-[#020617] border-l border-[#1e293b]">
           <OutputPanel nodeId={node.id} />
         </div>
       </div>
